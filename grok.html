@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestifyXR - Your Fest, Your Future</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==== CSS START ==== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: linear-gradient(135deg, #ff4d6d, #4ecdc4);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-left: 2rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #ffd700;
+            transform: scale(1.1);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 28px;
+            height: 3px;
+            background: white;
+            margin: 4px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff4d6d, #4ecdc4, #1a535c);
+            color: white;
+            text-align: center;
+            padding-top: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url('https://source.unsplash.com/1600x900/?festival,crowd,night,techno') no-repeat center center/cover;
+            opacity: 0.4;
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            max-width: 700px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .cta-btn {
+            background: #1a1a1a;
+            color: white;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .cta-btn:hover {
+            background: #ffd700;
+            color: #333;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Features Section - Now Events & Planner */
+        .events {
+            padding: 6rem 5%;
+            background: #0a0a0a;
+            color: #fff;
+        }
+
+        .events h2 {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 3rem;
+            color: #ff4d6d;
+            position: relative;
+        }
+
+        .events h2::after {
+            content: '';
+            width: 80px;
+            height: 4px;
+            background: #ff4d6d;
+            display: block;
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .event-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.4s;
+            border: 1px solid rgba(255, 77, 109, 0.2);
+            cursor: pointer;
+        }
+
+        .event-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 15px 30px rgba(255, 77, 109, 0.2);
+            border-color: #ff4d6d;
+        }
+
+        .event-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .event-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ff4d6d;
+        }
+
+        .event-card p {
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        .add-to-schedule {
+            background: #4ecdc4;
+            color: #333;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .add-to-schedule:hover {
+            background: #ffd700;
+        }
+
+        /* Gamification Section */
+        .gamification {
+            padding: 6rem 5%;
+            background: #111;
+            text-align: center;
+            color: #fff;
+        }
+
+        .gamification h2 {
+            font-size: 2.8rem;
+            margin-bottom: 3rem;
+            color: #ff4d6d;
+            position: relative;
+        }
+
+        .gamification h2::after {
+            content: '';
+            width: 80px;
+            height: 4px;
+            background: #ff4d6d;
+            display: block;
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .xp-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .xp-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4d6d, #4ecdc4);
+            width: 60%; /* Simulated progress */
+            transition: width 0.5s;
+        }
+
+        .qr-scanner {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+
+        .scan-btn {
+            background: #ffd700;
+            color: #333;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .scan-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Chatbot Section */
+        .chatbot {
+            padding: 6rem 5%;
+            background: #f9f9f9;
+            text-align: center;
+            color: #333;
+        }
+
+        .chatbot h2 {
+            font-size: 2.8rem;
+            margin-bottom: 3rem;
+            color: #ff4d6d;
+        }
+
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            background: #f0f0f0;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 10px;
+        }
+
+        .user-message {
+            background: #4ecdc4;
+            text-align: right;
+            color: white;
+        }
+
+        .bot-message {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        .send-btn {
+            background: #ff4d6d;
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .send-btn:hover {
+            background: #e63946;
+        }
+
+        /* Map Section */
+        .map {
+            padding: 6rem 5%;
+            background: #0a0a0a;
+            color: #fff;
+            text-align: center;
+        }
+
+        .map h2 {
+            font-size: 2.8rem;
+            margin-bottom: 3rem;
+            color: #ff4d6d;
+        }
+
+        #map-placeholder {
+            height: 400px;
+            background: #333;
+            border-radius: 15px;
+            margin: 0 auto;
+            max-width: 800px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 1.2rem;
+        }
+
+        /* Gallery Section - Now Rewards & Leaderboard */
+        .rewards {
+            padding: 6rem 5%;
+            background: #111;
+            text-align: center;
+            color: #fff;
+        }
+
+        .rewards h2 {
+            font-size: 2.8rem;
+            margin-bottom: 3rem;
+            color: #ff4d6d;
+        }
+
+        .leaderboard {
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        .leaderboard table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .leaderboard th, .leaderboard td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .leaderboard th {
+            background: #ff4d6d;
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            background: #000;
+            color: #aaa;
+            text-align: center;
+            padding: 3rem 5%;
+            border-top: 1px solid #333;
+        }
+
+        .social-links {
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            color: #ff4d6d;
+            margin: 0 1.2rem;
+            font-size: 1.4rem;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #fff;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background: rgba(255, 77, 109, 0.95);
+                width: 100%;
+                text-align: center;
+                transition: 0.4s;
+                padding: 2rem 0;
+            }
+            .nav-menu.active { left: 0; }
+            .nav-menu li { margin: 1.5rem 0; }
+
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.1rem; }
+
+            .events h2, .gamification h2, .chatbot h2, .map h2, .rewards h2 { font-size: 2.2rem; }
+        }
+        /* ==== CSS END ==== */
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-brand">FestifyXR</div>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#events">Events</a></li>
+                <li><a href="#gamification">Rewards</a></li>
+                <li><a href="#chatbot">XR Chat</a></li>
+                <li><a href="#map">XR Map</a></li>
+                <li><a href="#rewards">Leaderboard</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <h1>Hey! Welcome to FestifyXR</h1>
+        <p>Experience the future of festivals: AR navigation, AI companions, gamified rewards, and immersive memories — all in one XR-powered platform.</p>
+        <button class="cta-btn" onclick="startConfetti()">Launch XR Experience</button>
+    </section>
+
+    <!-- Events Section -->
+    <section id="events" class="events">
+        <h2>Events & AI Planner</h2>
+        <div class="events-grid">
+            <div class="event-card">
+                <img src="https://source.unsplash.com/400x300/?edm,concert" alt="EDM Night">
+                <h3>EDM Night</h3>
+                <p>High-energy beats under the stars. Starts at 8 PM near Audi.</p>
+                <button class="add-to-schedule" onclick="addToSchedule('EDM Night')">Add to My Schedule</button>
+            </div>
+            <div class="event-card">
+                <img src="https://source.unsplash.com/400x300/?workshop,tech" alt="Hackathon">
+                <h3>Hackathon Finals</h3>
+                <p>Innovate and compete! Your chance to shine.</p>
+                <button class="add-to-schedule" onclick="addToSchedule('Hackathon')">Add to My Schedule</button>
+            </div>
+            <div class="event-card">
+                <img src="https://source.unsplash.com/400x300/?robowars" alt="Robowars">
+                <h3>Robowars Extravaganza</h3>
+                <p>Battle bots in epic showdowns.</p>
+                <button class="add-to-schedule" onclick="addToSchedule('Robowars')">Add to My Schedule</button>
+            </div>
+            <div class="event-card">
+                <img src="https://source.unsplash.com/400x300/?cultural,dance" alt="Star Night">
+                <h3>Star Night</h3>
+                <p>Celebrate with live performances and vibes.</p>
+                <button class="add-to-schedule" onclick="addToSchedule('Star Night')">Add to My Schedule</button>
+            </div>
+            <div class="event-card">
+                src="https://source.unsplash.com/400x300/?food,festival" alt="Food Zone">
+                <h3>Food Fest</h3>
+                <p>Indulge in street eats and global flavors.</p>
+                <button class="add-to-schedule" onclick="addToSchedule('Food Fest')">Add to My Schedule</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gamification Section -->
+    <section id="gamification" class="gamification">
+        <h2>Gamified Passport - Earn XP & Rewards</h2>
+        <p>Scan QRs at events to level up! Unlock merch, free food, and backstage passes.</p>
+        <div class="xp-bar">
+            <div class="xp-progress" id="xpProgress"></div>
+        </div>
+        <p id="xpText">Level 3 - 450/1000 XP (You're on fire!)</p>
+        <div class="qr-scanner">
+            <button class="scan-btn" onclick="scanQR()">Scan QR to Earn XP</button>
+            <p id="scanResult" style="margin-top: 1rem; color: #4ecdc4;"></p>
+        </div>
+    </section>
+
+    <!-- Chatbot Section -->
+    <section id="chatbot" class="chatbot">
+        <h2>Talk to Your XR Buddy</h2>
+        <p>Ask me anything: "Where's the hackathon?" or "What's the crowd like at Food Zone?"</p>
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">Hey! I'm your FestifyXR Buddy. Ready to explore the future of festivals?</div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type your message... (e.g., Where is EDM Night?)" onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map" class="map">
+        <h2>XR Live Map & Crowd Heatmap</h2>
+        <p>Navigate with AR arrows and see real-time crowd levels (Green: Chill | Yellow: Busy | Red: Packed)</p>
+        <div id="map-placeholder">
+            XR Map Placeholder<br>
+            (Click events above to pin locations. Crowd at Food Zone: Yellow - Moderate)
+        </div>
+    </section>
+
+    <!-- Rewards & Leaderboard Section -->
+    <section id="rewards" class="rewards">
+        <h2>Leaderboard & Rewards</h2>
+        <p>Top explorers get shoutouts and exclusive perks!</p>
+        <div class="leaderboard">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Attendee</th>
+                        <th>XP</th>
+                        <th>Badge</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Ananya S.</td>
+                        <td>1200</td>
+                        <td>Golden Explorer</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Arjun K.</td>
+                        <td>1050</td>
+                        <td>Fest Master</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Priya M.</td>
+                        <td>980</td>
+                        <td>Vibe Keeper</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>You?</td>
+                        <td id="userXP">450</td>
+                        <td>Level Up!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="cta-btn" style="margin-top: 2rem;" onclick="generateReel()">Generate XR Reel Memory</button>
+        <p id="reelResult" style="margin-top: 1rem; color: #4ecdc4;"></p>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-content">
+            <p>&copy; 2025 FestifyXR. Powered by Extended Reality. Built for the Future of Festivals.</p>
+            <div class="social-links">
+                <a href="#">Instagram</a>
+                <a href="#">Facebook</a>
+                <a href="#">Official Site</a>
+                <a href="#">Discord</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confetti" class="confetti"></canvas>
+
+    <script>
+        // ==== JavaScript START ====
+
+        // Mobile Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu on link click
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Events: Add to Schedule
+        function addToSchedule(eventName) {
+            alert(`${eventName} added to your XR schedule! Reminder set for 30 mins before.`);
+            // Simulate adding to localStorage or Firebase
+        }
+
+        // Gamification: XP & QR Scan
+        let userXP = 450;
+        function updateXP(newXP) {
+            userXP = newXP;
+            document.getElementById('xpProgress').style.width = `${(userXP % 1000) / 10}%`;
+            document.getElementById('xpText').textContent = `Level ${Math.floor(userXP / 1000) + 1} - ${userXP % 1000}/1000 XP (You're on fire!)`;
+            document.getElementById('userXP').textContent = userXP;
+            startConfetti();
+        }
+
+        function scanQR() {
+            const results = ['+50 XP for checking into EDM Night!', '+100 XP for Robowars scan!', '+30 XP for Food Zone!'];
+            const randomResult = results[Math.floor(Math.random() * results.length)];
+            document.getElementById('scanResult').textContent = randomResult;
+            updateXP(userXP + parseInt(randomResult.match(/\d+/)[0]));
+        }
+
+        // Chatbot
+        const botResponses = {
+            'edm': 'EDM Night is at Audi, starts at 8 PM. Crowd is moderate - go now!',
+            'hackathon': 'Hackathon finals near LT-1. Good luck! Need tips?',
+            'food': 'Food Zone is packed (red heatmap). Try Bakery Lane for less wait.',
+            'crowd': 'Current heatmap: Food Zone - Yellow, Audi - Green. Avoid Stage Area till 9 PM.',
+            'default': 'Got it! For more, ask about events, maps, or rewards. What\'s your mood today?'
+        };
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.toLowerCase().trim();
+            if (!message) return;
+
+            const messages = document.getElementById('chatMessages');
+            messages.innerHTML += `<div class="message user-message">${input.value}</div>`;
+            input.value = '';
+
+            setTimeout(() => {
+                let response = 'default';
+                if (message.includes('edm') || message.includes('night')) response = 'edm';
+                else if (message.includes('hack') || message.includes('code')) response = 'hackathon';
+                else if (message.includes('food') || message.includes('eat')) response = 'food';
+                else if (message.includes('crowd') || message.includes('busy')) response = 'crowd';
+
+                messages.innerHTML += `<div class="message bot-message">${botResponses[response]}</div>`;
+                messages.scrollTop = messages.scrollHeight;
+            }, 1000);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+
+        // Reel Generator
+        function generateReel() {
+            document.getElementById('reelResult').textContent = 'XR Reel generated! Check your gallery for your festival highlights with beats & logo. Share on Insta?';
+            // Simulate FFmpeg or API call
+        }
+
+        // Confetti Effect
+        function startConfetti() {
+            const canvas = document.getElementById('confetti');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const confetti = [];
+            for (let i = 0; i < 100; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 4 + 1,
+                    d: Math.random() * 10 + 10,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    tilt: Math.random() * 10 - 10,
+                    tiltAngle: 0
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confetti.forEach((c, i) => {
+                    c.tiltAngle += 0.1;
+                    c.y += c.d;
+                    c.tilt = Math.sin(c.tiltAngle) * 15;
+
+                    if (c.y > canvas.height) confetti.splice(i, 1);
+
+                    ctx.beginPath();
+                    ctx.lineWidth = c.r;
+                    ctx.strokeStyle = c.color;
+                    ctx.moveTo(c.x + c.tilt + c.r / 2, c.y);
+                    ctx.lineTo(c.x + c.tilt - c.r / 2, c.y + c.tilt + c.r / 2);
+                    ctx.stroke();
+                });
+
+                if (confetti.length > 0) requestAnimationFrame(draw);
+                else canvas.style.display = 'none';
+            }
+
+            canvas.style.display = 'block';
+            draw();
+        }
+
+        // Initialize XP
+        updateXP(userXP);
+
+        // ==== JavaScript END ====
+    </script>
+</body>
+</html>
