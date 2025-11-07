@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FestifyXR — Fest Companion</title>
+<style>
+  :root{
+    --bg:#0b0d12; --elev:#121622; --card:#161b2b; --muted:#8aa0ff55; --text:#eaf0ff; --sub:#adb6d9;
+    --brand:#7c9cff; --brand-2:#6af2c6; --red:#ff5d6c; --yellow:#ffd166; --green:#63e6be; --orange:#ff9f43;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    background: radial-gradient(1000px 600px at 10% -10%, #1d2340 0%, #0b0d12 60%) fixed; color:var(--text);
+  }
+  header{ position:sticky; top:0; z-index:30; backdrop-filter: blur(8px); background:linear-gradient(180deg, #0b0d12cc, #0b0d1200); border-bottom:1px solid #ffffff10; }
+  .bar{ max-width:1200px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px; }
+  .logo{ display:flex; gap:10px; align-items:center; font-weight:800; letter-spacing:.2px; }
+  .logo-badge{ width:34px; height:34px; border-radius:10px; background: conic-gradient(from 120deg, var(--brand), #b488ff, var(--brand-2)); box-shadow:0 6px 18px #6a89ff55 inset, 0 0 20px #6a89ff55; }
+  .search{ flex:1; position:relative; }
+  .search input{ width:100%; padding:12px 14px 12px 40px; border-radius:12px; background:var(--elev); border:1px solid #ffffff10; color:var(--text); outline:none; }
+  .search svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.6}
+  .nav{ display:flex; gap:8px; flex-wrap:wrap; }
+  .nav button{ background:transparent; color:var(--text); border:1px solid #ffffff12; padding:10px 12px; border-radius:10px; cursor:pointer; transition:.2s; font-weight:600; }
+  .nav button.active, .nav button:hover{ background:#ffffff10; border-color:#ffffff22 }
+  main{ max-width:1200px; margin:18px auto 120px; padding:0 18px }
+  .grid{ display:grid; gap:16px }
+  @media(min-width:900px){ .grid-3{ grid-template-columns: 2fr 1fr 1fr } }
+  @media(min-width:900px){ .grid-2{ grid-template-columns: 1.4fr 1fr } }
+  .card{ background:linear-gradient(180deg, #141a2a, #101525); border:1px solid #ffffff12; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+  .card h3{ margin:0; padding:16px; border-bottom:1px solid #ffffff10; display:flex; align-items:center; gap:10px }
+  .card .body{ padding:16px }
+  .muted{ color:var(--sub); font-size:.95rem }
+  .pill{ padding:6px 10px; border-radius:999px; border:1px solid #ffffff20; background:#ffffff08; font-size:.85rem }
+  .btn{ background:linear-gradient(180deg, #6f8dff, #5674ff); color:#070b15; font-weight:800; border:none; padding:10px 14px; border-radius:12px; cursor:pointer; box-shadow:0 8px 18px #6f8dff44; transition:.2s; }
+  .btn.alt{ background:linear-gradient(180deg,#67f1c5,#49d3a7) }
+  .btn.ghost{ background:#ffffff10; color:var(--text); border:1px solid #ffffff22; box-shadow:none }
+  .list{ display:flex; flex-direction:column; gap:10px }
+  .item{ display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px; border-radius:12px; background:#0f1524; border:1px solid #ffffff0f }
+  .item .meta{ display:flex; flex-direction:column; gap:2px }
+  .kpis{ display:flex; gap:12px; flex-wrap:wrap }
+  .kpi{ background:linear-gradient(180deg, #19213a, #131a2d); border:1px solid #ffffff10; border-radius:14px; padding:14px; min-width:130px; }
+  .kpi b{ font-size:1.4rem }
+  .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+  .heatmap{ position:relative; background:#0d1220; height:360px; border-radius:14px; border:1px solid #ffffff10; overflow:hidden; background-image: radial-gradient(#7c9cff11 1px, transparent 1px); background-size: 18px 18px; }
+  .zone{ position:absolute; width:110px; height:80px; border-radius:14px; border:1px solid #ffffff20; background:#ffffff08; display:flex; align-items:center; justify-content:center; text-align:center; padding:6px; font-weight:700; }
+  .zone .badge{ position:absolute; right:6px; top:6px; font-size:.8rem; padding:4px 8px; border-radius:999px; background:#00000066 }
+  .heat-0{ box-shadow:0 0 0 0 rgba(99,230,190,.45) inset }
+  .heat-1{ box-shadow:0 0 0 999in rgba(99,230,190,.06) inset; border-color:#63e6be55 }
+  .heat-2{ box-shadow:0 0 0 999in rgba(255,209,102,.08) inset; border-color:#ffd16666 }
+  .heat-3{ box-shadow:0 0 0 999in rgba(255,159,67,.10) inset; border-color:#ff9f4366 }
+  .heat-4{ box-shadow:0 0 0 999in rgba(255,93,108,.12) inset; border-color:#ff5d6c66 }
+  .toolbar{ display:flex; gap:8px; flex-wrap:wrap }
+  .toolbar .btn{ padding:8px 10px; font-size:.9rem }
+  .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#101525; color:var(--text); padding:12px 16px; border-radius:12px; border:1px solid #ffffff22; box-shadow:var(--shadow); z-index:1000; display:none; }
+  /* Buddy chat */
+  .chat{ height:400px; overflow:auto; background:#0f1524; border:1px solid #ffffff14; border-radius:14px; padding:12px; }
+  .bubble{ max-width:70%; padding:10px 12px; border-radius:12px; margin:10px 0; }
+  .me{ background:#22305a; margin-left:auto }
+  .bot{ background:#1a233d; border:1px solid #ffffff14 }
+  .inputbar{ display:flex; gap:8px; margin-top:10px }
+  .inputbar input, .inputbar textarea{ flex:1; padding:12px; border-radius:12px; background:#0f1524; border:1px solid #ffffff22; color:var(--text); resize:none }
+  .tag{ font-size:.8rem; padding:4px 8px; border-radius:8px; border:1px solid #ffffff22; background:#ffffff0c }
+  /* Reel maker */
+  canvas#reelCanvas{ width:100%; background:#0f1524; border:1px solid #ffffff14; border-radius:12px }
+  small.hint{ color:var(--sub) }
+  footer{ position:fixed; bottom:0; left:0; right:0; background:#0b0d12e0; border-top:1px solid #ffffff10; backdrop-filter: blur(8px); }
+  .footbar{ max-width:1200px; margin:0 auto; padding:10px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px }
+  .footbar .status{ display:flex; gap:12px; align-items:center; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 4px #63e6be33 }
+  a.inline{ color:var(--brand-2); text-decoration:none; border-bottom:1px dashed #67f1c5 }
+
+  /* ====== LOGIN OVERLAY ====== */
+  .overlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:radial-gradient(800px 500px at 20% -10%, #1d2340cc 0%, #0b0d12ee 50%, #0b0d12f0 100%); backdrop-filter: blur(8px); z-index:9999; }
+  .login{ width:min(560px, 94vw); background:linear-gradient(180deg, #151b2c, #0f1424); border:1px solid #ffffff18; border-radius:18px; box-shadow:var(--shadow); padding:18px; }
+  .login h2{ margin:0 0 6px 0 }
+  .login p{ margin:0 0 16px 0; color:var(--sub) }
+  .login form{ display:grid; gap:12px }
+  .field{ display:grid; gap:6px }
+  .field input, .field select{ padding:12px; border-radius:12px; background:#0f1524; border:1px solid #ffffff22; color:var(--text) }
+  .hr{ height:1px; background:#ffffff14; margin:2px 0 10px }
+  .err{ color:var(--red); font-size:.9rem }
+  .login .row-end{ display:flex; gap:10px; justify-content:flex-end; align-items:center }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">
+      <div class="logo-badge"></div>
+      <div>FestifyXR</div>
+      <span class="pill" id="roleBadge">Fest Companion</span>
+    </div>
+    <div class="search">
+      <svg width="18" height="18" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="6" stroke-width="1.5"/><path d="M13 13l4 4" stroke-width="1.5"/></svg>
+      <input id="search" placeholder="Search events e.g. 'EDM night' or 'Robo Wars'…">
+    </div>
+    <nav class="nav" id="nav">
+      <button data-view="home" class="active">Home</button>
+      <button data-view="events">Events</button>
+      <button data-view="plan">My Plan</button>
+      <button data-view="map">Map</button>
+      <button data-view="rewards">Rewards</button>
+      <button data-view="buddy">Buddy</button>
+      <button data-view="reel">Memory Reel</button>
+      <button id="logoutBtn" class="btn ghost" style="margin-left:8px" title="Sign out">Logout</button>
+    </nav>
+  </div>
+</header>
+
+<!-- LOGIN OVERLAY -->
+<div class="overlay" id="loginOverlay">
+  <div class="login">
+    <h2>Sign in</h2>
+    <p>Choose role and enter your email to continue.</p>
+    <div class="hr"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label for="role">Role <span class="muted">(required)</span></label>
+        <select id="role" required>
+          <option value="" disabled selected>Select role</option>
+          <option value="participant">Participant</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="email">Email <span class="muted">(required)</span></label>
+        <input id="email" type="email" inputmode="email" placeholder="you@example.com" required />
+      </div>
+      <div class="field">
+        <label for="name">Name <span class="muted">(optional)</span></label>
+        <input id="name" type="text" placeholder="Your name" />
+      </div>
+      <div class="row-end">
+        <button type="button" class="btn ghost" id="demoFill">Quick demo fill</button>
+        <button type="submit" class="btn">Continue</button>
+      </div>
+      <div id="loginErr" class="err" style="display:none"></div>
+    </form>
+  </div>
+</div>
+
+<main id="app"></main>
+
+<footer>
+  <div class="footbar">
+    <div class="status">
+      <div class="dot"></div>
+      <div class="muted" id="greet">Welcome!</div>
+    </div>
+    <div class="row">
+      <span class="pill">XP: <b id="xpFoot">0</b></span>
+      <button class="btn alt" onclick="openQR()">Scan QR</button>
+      <button class="btn ghost" onclick="resetDemo()">Reset Demo</button>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========= DATA & STATE ========= */
+const SAT = {
+  events: [
+    {id:'e1', title:'EDM Night', time:'Today 8:00 PM', venue:'Main Stage', tag:'music', points:15, desc:'High-energy set with guest DJ.'},
+    {id:'e2', title:'Robo Wars', time:'Today 2:00 PM', venue:'LT-2 Arena', tag:'tech', points:20, desc:'Robots battle in the arena.'},
+    {id:'e3', title:'Hackathon Finals', time:'Tomorrow 11:00 AM', venue:'Auditorium', tag:'tech', points:25, desc:'Top teams pitch to judges.'},
+    {id:'e4', title:'Comedy Night', time:'Tomorrow 7:30 PM', venue:'Open Air Theatre', tag:'fun', points:10, desc:'Standup acts from campus.'},
+    {id:'e5', title:'Food Fest', time:'Today 12:00 PM', venue:'Food Court', tag:'food', points:8, desc:'Stalls from around the city.'},
+    {id:'e6', title:'Drone Show', time:'Tomorrow 8:45 PM', venue:'Football Ground', tag:'show', points:18, desc:'Light formations in the sky.'},
+  ],
+  zones: [
+    {id:'z1', name:'Main Stage', x:18, y:18},
+    {id:'z2', name:'Food Court', x:58, y:24},
+    {id:'z3', name:'LT-2 Arena', x:14, y:62},
+    {id:'z4', name:'Auditorium', x:53, y:66},
+    {id:'z5', name:'OAT', x:78, y:44}
+  ],
+  rewards: [
+    {id:'r1', title:'Free Coffee', cost:30},
+    {id:'r2', title:'Merch ₹100 Off', cost:60},
+    {id:'r3', title:'Backstage Pass', cost:120}
+  ],
+  qrCatalog: { // demo QR codes → points
+    'SAT-EDM-15': {type:'event', ref:'e1', points:15},
+    'SAT-ROBO-20': {type:'event', ref:'e2', points:20},
+    'SAT-FOOD-5':  {type:'spot', ref:'z2', points:5},
+    'SAT-BONUS-25':{type:'bonus', ref:'any', points:25}
+  }
+};
+
+const store = {
+  get: (k, def) => JSON.parse(localStorage.getItem(k) || JSON.stringify(def)),
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+};
+
+const state = {
+  view: 'home',
+  user: store.get('sb_user', {name:'Aadit', xp:0, level:1, plan:[], scans:[], zoneCounts:{}, reels:[]}),
+  auth: store.get('sb_auth', null)
+};
+
+/* ========= UTIL ========= */
+const qs = s => document.querySelector(s);
+const qsa = s => [...document.querySelectorAll(s)];
+function toast(msg, ms=2200){ const t=qs('#toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none', ms); }
+function setXP(delta){
+  state.user.xp = Math.max(0, (state.user.xp||0) + delta);
+  const level = Math.floor(1 + state.user.xp / 100);
+  state.user.level = level;
+  store.set('sb_user', state.user);
+  qs('#xpFoot').textContent = state.user.xp;
+}
+function greet(){
+  const h = new Date().getHours();
+  const part = h<12?'morning':h<17?'afternoon':'evening';
+  const who = state.auth? (state.auth.name || (state.auth.role==='admin' ? 'Admin' : 'Participant')) : 'Guest';
+  qs('#greet').textContent = `Good ${part}, ${who}!`;
+}
+function pickHeatClass(n){ return n>=40?'heat-4':n>=28?'heat-3':n>=16?'heat-2':n>=6?'heat-1':'heat-0'; }
+function ensureZoneCounts(){
+  if(!state.user.zoneCounts) state.user.zoneCounts = {};
+  SAT.zones.forEach(z=>{ if(!(z.id in state.user.zoneCounts)) state.user.zoneCounts[z.id]=Math.floor(Math.random()*14); });
+  store.set('sb_user', state.user);
+}
+
+/* ========= AUTH ========= */
+function showLogin(){
+  qs('#loginOverlay').style.display='flex';
+}
+function hideLogin(){
+  qs('#loginOverlay').style.display='none';
+}
+function validateEmail(v){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+function applyRoleUI(){
+  const badge = qs('#roleBadge');
+  if(state.auth){
+    badge.textContent = state.auth.role==='admin' ? 'Admin' : 'Participant';
+    // Example: simple UI tweak for admin
+    const rewardsBtn = [...document.querySelectorAll('#nav button')].find(b=>b.dataset?.view==='rewards');
+    if(rewardsBtn){ rewardsBtn.style.display = state.auth.role==='admin' ? 'none' : ''; }
+  }
+}
+function logout(){
+  localStorage.removeItem('sb_auth');
+  state.auth = null;
+  showLogin();
+  render();
+}
+
+/* ========= ROUTER ========= */
+const VIEWS = {
+  home(){ return `
+    <div class="grid grid-3">
+      <section class="card">
+        <h3>Today at a glance ✨</h3>
+        <div class="body">
+          <div class="kpis">
+            <div class="kpi"><div class="muted">XP</div><b>${state.user.xp}</b><div class="muted">Level ${state.user.level}</div></div>
+            <div class="kpi"><div class="muted">My Events</div><b>${state.user.plan.length}</b><div class="muted">planned</div></div>
+            <div class="kpi"><div class="muted">Rewards</div><b>${SAT.rewards.length}</b><div class="muted">available</div></div>
+          </div>
+          <div style="height:12px"></div>
+          <div class="row">
+            <button class="btn" onclick="goto('events')">Browse Events</button>
+            <button class="btn alt" onclick="openQR()">Scan QR</button>
+            <button class="btn ghost" onclick="goto('map')">Live Crowd Map</button>
+          </div>
+        </div>
+      </section>
+      <section class="card">
+        <h3>Quick Recommendations 🧠</h3>
+        <div class="body list">
+          ${recommend().map(ev=>eventLine(ev,true)).join('')}
+        </div>
+      </section>
+      <section class="card">
+        <h3>Announcements 📣</h3>
+        <div class="body">
+          <ul>
+            <li>Food Court happy hour 4–5 PM (double XP on scans!)</li>
+            <li>Drone Show rehearsal at 6 PM near Football Ground.</li>
+            <li>Use <span class="tag">SAT-BONUS-25</span> once per user 😉</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  `;},
+  events(){
+    const q = (qs('#search').value||'').toLowerCase();
+    const filtered = SAT.events.filter(e => e.title.toLowerCase().includes(q) || e.tag.includes(q));
+    return `
+      <section class="card">
+        <h3>All Events</h3>
+        <div class="body list">
+          ${filtered.map(e => `
+            <div class="item">
+              <div class="meta">
+                <b>${e.title}</b>
+                <span class="muted">${e.time} · ${e.venue} · <span class="tag">${e.tag}</span></span>
+              </div>
+              <div class="row">
+                <span class="pill">+${e.points} XP</span>
+                ${state.user.plan.includes(e.id)
+                  ? `<button class=\"btn ghost\" onclick=\"removeFromPlan('${e.id}')\">Remove</button>`
+                  : `<button class=\"btn\" onclick=\"addToPlan('${e.id}')\">Add</button>`}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    `;
+  },
+  plan(){
+    const planned = SAT.events.filter(e => state.user.plan.includes(e.id));
+    return `
+      <section class="card">
+        <h3>My Plan</h3>
+        <div class="body list">
+          ${planned.length? planned.map(e => `
+            <div class="item">
+              <div class="meta">
+                <b>${e.title}</b>
+                <span class="muted">${e.time} · ${e.venue}</span>
+              </div>
+              <div class="row">
+                <button class=\"btn ghost\" onclick=\"navToVenue('${e.venue}')\">Navigate</button>
+                <button class=\"btn\" onclick=\"checkInEvent('${e.id}')\">Check-in (+${e.points} XP)</button>
+                <button class=\"btn ghost\" onclick=\"removeFromPlan('${e.id}')\">Remove</button>
+              </div>
+            </div>
+          `).join('') : `<div class="muted">No events yet. Go to <a class="inline" href="#" onclick="goto('events')">Events</a> to add some.</div>`}
+        </div>
+      </section>
+    `;
+  },
+  map(){
+    ensureZoneCounts();
+    return `
+      <section class="card">
+        <h3>Live Crowd Heatmap</h3>
+        <div class="body">
+          <div class="toolbar">
+            <button class="btn" onclick="pingHere()">I am here (contribute)</button>
+            <button class="btn ghost" onclick="decrowd()">Clear crowd (demo)</button>
+          </div>
+          <div style="height:10px"></div>
+          <div class="heatmap" id="heat">
+            ${SAT.zones.map(z=>{
+              const n = state.user.zoneCounts[z.id]||0;
+              return `
+                <div class=\"zone ${pickHeatClass(n)}\" style=\"left:${z.x}%; top:${z.y}%\">
+                  <span class=\"badge\">${n}</span>
+                  ${z.name}
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <div style="height:10px"></div>
+          <div class="muted">Tip: press “I am here” near a zone to simulate anonymous pings. Colors: green → calm, red → crowded.</div>
+        </div>
+      </section>
+    `;
+  },
+  rewards(){
+    const scans = state.user.scans||[];
+    return `
+      <div class="grid grid-2">
+        <section class="card">
+          <h3>Rewards Center 🎁</h3>
+          <div class="body list">
+            ${SAT.rewards.map(r=>`
+              <div class="item">
+                <div class="meta"><b>${r.title}</b><span class="muted">${r.cost} XP</span></div>
+                <div class="row">
+                  <button class=\"btn\" ${state.user.xp<r.cost?'disabled':''} onclick=\"redeem('${r.id}')\">Redeem</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+        <section class="card">
+          <h3>Scan History</h3>
+          <div class="body list">
+            ${scans.length? scans.slice().reverse().map(s=>`
+              <div class="item">
+                <div class="meta"><b>${s.code}</b><span class="muted">${s.time}</span></div>
+                <span class="pill">+${s.points} XP</span>
+              </div>
+            `).join('') : `<div class="muted">No scans yet. Use the <b>Scan QR</b> button below.</div>`}
+          </div>
+        </section>
+      </div>
+    `;
+  },
+  buddy(){
+    return `
+      <div class="grid grid-2">
+        <section class="card">
+          <h3>Buddy Chat 🤖</h3>
+          <div class="body">
+            <div class="chat" id="chat"></div>
+            <div class="inputbar">
+              <input id="chatInput" placeholder="Ask me anything: 'Where is Robo Wars?' 'What’s my XP?'" onkeydown="if(event.key==='Enter') sendMsg()">
+              <button class="btn" onclick="sendMsg()">Send</button>
+              <button class="btn alt" id="voiceBtn" onclick="toggleVoice()">🎙️ Voice</button>
+            </div>
+            <div style="height:8px"></div>
+            <div class="row muted">
+              <span class="tag">try: “events for music”</span>
+              <span class="tag">“navigate to Main Stage”</span>
+              <span class="tag">“my points?”</span>
+            </div>
+          </div>
+        </section>
+        <section class="card">
+          <h3>Quick Actions</h3>
+          <div class="body list">
+            <div class="item"><div class="meta"><b>AR Poster (demo)</b><span class="muted">Open camera & overlay info (mock)</span></div><button class="btn ghost" onclick="demoAR()">Try</button></div>
+            <div class="item"><div class="meta"><b>Lost & Found (demo)</b><span class="muted">Image similarity mock</span></div><button class="btn ghost" onclick="lostFound()">Open</button></div>
+            <div class="item"><div class="meta"><b>Invite Friends</b><span class="muted">Share this page URL</span></div><span class="pill">No login needed</span></div>
+          </div>
+        </section>
+      </div>
+    `;
+  },
+  reel(){
+    return `
+      <section class="card">
+        <h3>Memory Reel Maker 🎞️</h3>
+        <div class="body">
+          <div class="row">
+            <input type="file" id="reelFiles" accept="image/*" multiple>
+            <button class="btn" onclick="previewReel()">Preview</button>
+            <button class="btn alt" onclick="recordReel()">Export .webm</button>
+          </div>
+          <div style="height:10px"></div>
+          <small class="hint">Tip: pick 5–10 images. We’ll auto crossfade and add a subtle zoom effect. Exports entirely in-browser.</small>
+          <div style="height:10px"></div>
+          <canvas id="reelCanvas" width="800" height="450"></canvas>
+        </div>
+      </section>
+    `;
+  },
+};
+
+function goto(view){ state.view = view; qsa('#nav button').forEach(b => b.classList.toggle('active', b.dataset.view===view)); render(); }
+function render(){ qs('#app').innerHTML = VIEWS[state.view](); qs('#xpFoot').textContent = state.user.xp; greet(); applyRoleUI(); }
+
+/* ========= FEATURES ========= */
+function eventLine(e, compact=false){
+  return `
+    <div class="item">
+      <div class="meta">
+        <b>${e.title}</b>
+        <span class="muted">${e.time} · ${e.venue} · <span class="tag">${e.tag}</span></span>
+      </div>
+      <div class="row">
+        <span class="pill">+${e.points} XP</span>
+        ${state.user.plan.includes(e.id)
+          ? `<button class=\"btn ghost\" onclick=\"removeFromPlan('${e.id}')\">Remove</button>`
+          : `<button class=\"btn\" onclick=\"addToPlan('${e.id}')\">Add</button>`}
+      </div>
+    </div>
+  `;
+}
+function recommend(){
+  // naive: suggest highest points not in plan
+  return SAT.events.filter(e=>!state.user.plan.includes(e.id)).sort((a,b)=>b.points-a.points).slice(0,3);
+}
+function addToPlan(id){ if(!state.user.plan.includes(id)) state.user.plan.push(id); store.set('sb_user', state.user); toast('Added to plan ✅'); render(); }
+function removeFromPlan(id){ state.user.plan = state.user.plan.filter(x=>x!==id); store.set('sb_user', state.user); render(); }
+function navToVenue(venue){ toast(`Opening navigation to ${venue}…`); const q = encodeURIComponent(venue + ' Thapar University'); window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank'); }
+function checkInEvent(id){ const e = SAT.events.find(x=>x.id===id); if(!e) return; setXP(e.points); logScan({code:`CHECKIN-${id}`, points:e.points}); toast(`Checked in to ${e.title}! +${e.points} XP 🎉`); render(); }
+
+/* ========= QR SCAN ========= */
+let camStream=null;
+function openQR(){
+  const code = prompt("Demo QR: try SAT-EDM-15, SAT-ROBO-20, SAT-FOOD-5, SAT-BONUS-25\n\n(Optional) Enter code manually:");
+  if(code){ processQR(code.trim()); return; }
+  if(navigator.mediaDevices?.getUserMedia){
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+      camStream=stream;
+      const w = window.open('', '_blank', 'width=420,height=420');
+      w.document.write(`<title>QR Preview</title><video id="v" autoplay playsinline style="width:100%;background:#000"></video><div style="padding:8px;font-family:sans-serif">Point at code, then type it here:<br><input id="code" style="width:100%;padding:8px"><button onclick="opener.processQR(document.getElementById('code').value);window.close()">Submit</button></div>`);
+      const vid = w.document.getElementById('v');
+      vid.srcObject = stream;
+      w.onbeforeunload = ()=>{ try{stream.getTracks().forEach(t=>t.stop())}catch{} };
+    }).catch(()=>promptCode());
+  } else promptCode();
+}
+function promptCode(){ const code = prompt("Enter QR code:"); if(code) processQR(code.trim()); }
+function processQR(code){
+  const entry = SAT.qrCatalog[code];
+  if(!entry){ toast('Invalid QR'); return; }
+  if((state.user.scans||[]).find(s=>s.code===code)){ toast('Already scanned'); return; }
+  setXP(entry.points);
+  logScan({code, points:entry.points});
+  if(entry.type==='event'){
+    if(!state.user.plan.includes(entry.ref)) state.user.plan.push(entry.ref);
+  }else if(entry.type==='spot'){
+    ensureZoneCounts();
+    state.user.zoneCounts['z2'] += 8; // bump Food Court
+    store.set('sb_user', state.user);
+  }
+  toast(`+${entry.points} XP 🎉`);
+  render();
+}
+function logScan(s){ const t = new Date().toLocaleString(); state.user.scans = state.user.scans||[]; state.user.scans.push({...s, time:t}); store.set('sb_user', state.user); }
+
+/* ========= MAP HEAT ========= */
+function pingHere(){ ensureZoneCounts(); const z = SAT.zones[Math.floor(Math.random()*SAT.zones.length)]; state.user.zoneCounts[z.id] += 3 + Math.floor(Math.random()*4); store.set('sb_user', state.user); toast(`Pinged near ${z.name}`); if(state.view==='map') render(); }
+function decrowd(){ ensureZoneCounts(); Object.keys(state.user.zoneCounts).forEach(k=> state.user.zoneCounts[k] = Math.max(0, state.user.zoneCounts[k]-10)); store.set('sb_user', state.user); if(state.view==='map') render(); }
+
+/* ========= BUDDY CHAT ========= */
+const chatEl = ()=>qs('#chat');
+function addBubble(txt, who='bot'){ const d = document.createElement('div'); d.className = 'bubble ' + (who==='me'?'me':'bot'); d.textContent = txt; chatEl()?.appendChild(d); chatEl() && (chatEl().scrollTop = chatEl().scrollHeight); }
+function botReply(q){
+  q = q.toLowerCase();
+  if(/xp|points|score/.test(q)) return `You have ${state.user.xp} XP and are Level ${state.user.level}. Keep going!`;
+  if(/navigate|route|where/.test(q)){
+    const ev = SAT.events.find(e => q.includes(e.title.toLowerCase())) || null;
+    if(ev) return `Opening navigation to ${ev.venue} for ${ev.title}.`;
+    const z = SAT.zones.find(z => q.includes(z.name.toLowerCase()));
+    if(z) return `Opening navigation to ${z.name}.`;
+    return `Tell me the event or venue, e.g., “navigate to Main Stage”.`;
+  }
+  if(/events|show|list/.test(q)){
+    const tag = ['music','tech','fun','food','show'].find(t=>q.includes(t));
+    const pool = tag? SAT.events.filter(e=>e.tag===tag) : SAT.events;
+    return `Here are some picks: ` + pool.slice(0,3).map(e=>e.title).join(', ');
+  }
+  if(/schedule|plan/.test(q)){
+    const mine = SAT.events.filter(e=>state.user.plan.includes(e.id));
+    return mine.length? `You planned: ${mine.map(e=>e.title).join(', ')}` : `Your plan is empty. Add some events!`;
+  }
+  if(/help|hi|hello|hey/.test(q)) return `Hey! I’m FestifyXR 👋 Try “events for music”, “my points”, or “navigate to Main Stage”.`;
+  return `Got it! I’m still learning. Try asking “my points” or “events for tech”.`;
+}
+function sendMsg(){ const i = qs('#chatInput'); if(!i) return; const v = i.value.trim(); if(!v) return; addBubble(v,'me'); i.value=''; const r = botReply(v); if(r.startsWith('Opening navigation')) { const venue = (v.match(/to (.*)$/i)||[])[1] || ''; if(venue) navToVenue(venue); } setTimeout(()=>addBubble(r,'bot'), 250); }
+let recog=null, listening=false;
+function toggleVoice(){ if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){ toast('Speech API not supported'); return; } const Cls = window.SpeechRecognition||window.webkitSpeechRecognition; if(!recog){ recog = new Cls(); recog.lang='en-IN'; recog.interimResults=false; recog.onresult = e => { const text = e.results[0][0].transcript; qs('#chatInput').value=text; sendMsg(); }; recog.onend = ()=>{ listening=false; updateVoiceBtn(); }; } if(!listening){ recog.start(); listening=true; updateVoiceBtn(); toast('Listening…'); } else { recog.stop(); listening=false; updateVoiceBtn(); } }
+function updateVoiceBtn(){ const b=qs('#voiceBtn'); if(!b) return; b.textContent = listening?'⏹️ Stop':'🎙️ Voice'; }
+function demoAR(){ alert('WebAR mock: overlaying info on poster.\n(For real AR, use WebXR / 8th Wall in a production build.)'); }
+function lostFound(){ alert('Lost & Found mock: In production, compare uploaded item image features for matches.'); }
+
+/* ========= REEL MAKER ========= */
+let reelImgs=[];
+async function loadFiles(files){ reelImgs = await Promise.all([...files].map(file => new Promise((res)=>{ const img = new Image(); img.onload=()=>res(img); img.src=URL.createObjectURL(file); }))); }
+addEventListener('change', (e)=>{ if(e.target && e.target.id==='reelFiles'){ loadFiles(e.target.files); } });
+function previewReel(){ const canvas = qs('#reelCanvas'); const ctx = canvas?.getContext('2d'); if(!canvas||!reelImgs.length){ toast('Pick images first'); return; } let t=0; (function draw(){ const i1 = reelImgs[Math.floor(t/120)%reelImgs.length]; const i2 = reelImgs[(Math.floor(t/120)+1)%reelImgs.length]; const p = (t%120)/120; ctx.fillStyle='#0f1524'; ctx.fillRect(0,0,canvas.width,canvas.height); drawImageCover(ctx,i1, canvas.width, canvas.height, 1+0.05*p); ctx.globalAlpha = p; drawImageCover(ctx,i2, canvas.width, canvas.height, 1+0.05*(1-p)); ctx.globalAlpha=1; ctx.fillStyle='#ffffffaa'; ctx.font='bold 20px system-ui'; ctx.fillText('FestifyXR 2025', 18, canvas.height-18); t++; canvas._raf = requestAnimationFrame(draw); })(); }
+function drawImageCover(ctx,img,w,h,zoom=1){ const ar = img.width/img.height; const cw=w, ch=h; let dw, dh; if(cw/ch > ar){ dh = ch*zoom; dw = dh*ar; } else { dw = cw*zoom; dh = dw/ar; } const dx = (cw - dw)/2; const dy = (ch - dh)/2; ctx.drawImage(img, dx, dy, dw, dh); }
+async function recordReel(){ const canvas = qs('#reelCanvas'); const ctx = canvas?.getContext('2d'); if(!canvas||!reelImgs.length){ toast('Pick images first'); return; } let frames = 0, maxFrames = reelImgs.length*120; const stream = canvas.captureStream(30); const rec = new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp9'}); const chunks=[]; rec.ondataavailable = e=>chunks.push(e.data); rec.onstop = ()=>{ const blob = new Blob(chunks, {type:'video/webm'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='festifyxr-reel.webm'; a.click(); toast('Exported reel 🎬'); }; rec.start(); (function draw(){ const i1 = reelImgs[Math.floor(frames/120)%reelImgs.length]; const i2 = reelImgs[(Math.floor(frames/120)+1)%reelImgs.length]; const p = (frames%120)/120; ctx.fillStyle='#0f1524'; ctx.fillRect(0,0,canvas.width,canvas.height); drawImageCover(ctx,i1, canvas.width, canvas.height, 1+0.05*p); ctx.globalAlpha = p; drawImageCover(ctx,i2, canvas.width, canvas.height, 1+0.05*(1-p)); ctx.globalAlpha=1; ctx.fillStyle='#ffffffaa'; ctx.font='bold 20px system-ui'; ctx.fillText('FestifyXR 2025', 18, canvas.height-18); frames++; if(frames<=maxFrames) requestAnimationFrame(draw); else rec.stop(); })(); }
+
+/* ========= GLOBALS ========= */
+function redeem(id){ const r = SAT.rewards.find(x=>x.id===id); if(!r) return; if(state.user.xp < r.cost){ toast('Not enough XP'); return; } setXP(-r.cost); toast(`Redeemed: ${r.title} 🎉`); render(); }
+function resetDemo(){ localStorage.removeItem('sb_user'); state.user=store.get('sb_user',{name:'Aadit', xp:0, level:1, plan:[], scans:[], zoneCounts:{}, reels:[]}); toast('Demo reset'); render(); }
+
+// Nav buttons
+addEventListener('click', (e)=>{ const b = e.target.closest('#nav button'); if(!b) return; const view = b.dataset.view; if(view) goto(view); });
+qs('#logoutBtn').addEventListener('click', logout);
+qs('#search').addEventListener('input', ()=>{ if(state.view==='events') render(); });
+
+// Login form handlers
+qs('#demoFill').addEventListener('click', ()=>{ qs('#role').value='participant'; qs('#email').value='aadit@example.com'; qs('#name').value='Aadit'; });
+qs('#loginForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const role = qs('#role').value;
+  const email = qs('#email').value.trim();
+  const name = qs('#name').value.trim();
+  const err = qs('#loginErr');
+  err.style.display='none'; err.textContent='';
+  if(!role){ err.textContent='Please select a role (Admin or Participant).'; err.style.display='block'; return; }
+  if(!email){ err.textContent='Email is required.'; err.style.display='block'; return; }
+  if(!validateEmail(email)){ err.textContent='Please enter a valid email address.'; err.style.display='block'; return; }
+  state.auth = { role, email, name };
+  store.set('sb_auth', state.auth);
+  hideLogin();
+  toast('Signed in ✅');
+  if(name){ state.user.name = name; store.set('sb_user', state.user); }
+  render();
+});
+
+function requireAuth(){ if(!state.auth || !state.auth.email || !state.auth.role){ showLogin(); } else { hideLogin(); } }
+
+function init(){
+  requireAuth();
+  applyRoleUI();
+  if(state.auth){
+    render();
+    // Optional: welcome message
+    setTimeout(()=>{ if(state.view==='home'){ goto('buddy'); setTimeout(()=>{ addBubble(`Hey ${state.user.name || (state.auth.role==='admin'?'Admin':'Participant')}! I’m FestifyXR 👋 Ask me about events, points, or routes.`); }, 300)} }, 600);
+  }
+}
+init();
+</script>
+</body>
+</html>
