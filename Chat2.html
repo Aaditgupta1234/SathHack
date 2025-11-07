@@ -96,7 +96,6 @@
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#101525; color:var(--text);
     padding:12px 16px; border-radius:12px; border:1px solid #ffffff22; box-shadow:var(--shadow); z-index:1000; display:none;
   }
-  /* Buddy chat */
   .chat{
     height:400px; overflow:auto; background:#0f1524; border:1px solid #ffffff14; border-radius:14px; padding:12px;
   }
@@ -108,7 +107,6 @@
     flex:1; padding:12px; border-radius:12px; background:#0f1524; border:1px solid #ffffff22; color:var(--text); resize:none
   }
   .tag{ font-size:.8rem; padding:4px 8px; border-radius:8px; border:1px solid #ffffff22; background:#ffffff0c }
-  /* Reel maker */
   canvas#reelCanvas{ width:100%; background:#0f1524; border:1px solid #ffffff14; border-radius:12px }
   small.hint{ color:var(--sub) }
   footer{
@@ -118,18 +116,152 @@
   .footbar .status{ display:flex; gap:12px; align-items:center; }
   .dot{ width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 4px #63e6be33 }
   a.inline{ color:var(--brand-2); text-decoration:none; border-bottom:1px dashed #67f1c5 }
-
-  /* Auth Forms */
-  .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; text-align: center; }
-  .auth-container input, .auth-container select {
-    width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: var(--elev);
-    border: 1px solid #ffffff10; color: var(--text); outline: none; font-size: 1rem;
+  
+  /* Auth Styles */
+  .auth-container {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 30px;
+    background: linear-gradient(180deg, #141a2a, #101525);
+    border: 1px solid #ffffff12;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
   }
-  .auth-container .btn { width: 100%; margin-top: 10px; }
+  .auth-header {
+    text-align: center;
+    margin-bottom: 25px;
+  }
+  .auth-header h2 {
+    margin: 0 0 10px;
+    font-size: 28px;
+    background: linear-gradient(90deg, var(--brand), var(--brand-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .auth-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--elev);
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: var(--sub);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .auth-tab.active {
+    background: var(--brand);
+    color: #070b15;
+  }
+  .auth-form {
+    display: none;
+  }
+  .auth-form.active {
+    display: block;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--sub);
+    font-size: 14px;
+  }
+  .form-control {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--elev);
+    border: 1px solid #ffffff10;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-control:focus {
+    border-color: var(--brand);
+  }
+  .form-select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--elev);
+    border: 1px solid #ffffff10;
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+  }
+  .btn-block {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+  }
+  .auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--sub);
+  }
+  .auth-footer a {
+    color: var(--brand-2);
+    text-decoration: none;
+  }
+  .user-menu {
+    position: relative;
+  }
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    min-width: 180px;
+    background: var(--card);
+    border: 1px solid #ffffff12;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    z-index: 100;
+    display: none;
+  }
+  .user-dropdown.active {
+    display: block;
+  }
+  .user-dropdown a {
+    display: block;
+    padding: 12px 16px;
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .user-dropdown a:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .user-dropdown hr {
+    border: none;
+    border-top: 1px solid #ffffff10;
+    margin: 8px 0;
+  }
 </style>
 </head>
 <body>
-<header id="appHeader" style="display:none;">
+<header>
   <div class="bar">
     <div class="logo">
       <div class="logo-badge"></div>
@@ -148,14 +280,84 @@
       <button data-view="rewards">Rewards</button>
       <button data-view="buddy">Buddy</button>
       <button data-view="reel">Memory Reel</button>
-      <button class="btn ghost" onclick="logOut()">Log Out</button>
+      <button data-view="admin" id="adminBtn" style="display:none;">Admin</button>
     </nav>
+    <div class="user-menu" id="userMenu" style="display:none;">
+      <div class="user-avatar" id="userAvatar">U</div>
+      <div class="user-dropdown" id="userDropdown">
+        <a href="#" id="profileLink">Profile</a>
+        <a href="#" id="settingsLink">Settings</a>
+        <hr>
+        <a href="#" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+    <button class="btn" id="loginBtn" onclick="showAuth()">Login</button>
   </div>
 </header>
 
 <main id="app"></main>
 
-<footer id="appFooter" style="display:none;">
+<div id="authContainer" style="display:none;">
+  <div class="auth-container">
+    <div class="auth-header">
+      <h2>Welcome to FestifyXR</h2>
+      <p class="muted">Your festival companion app</p>
+    </div>
+    
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+    
+    <form id="loginForm" class="auth-form active">
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" class="form-control" placeholder="your@email.com" required>
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label for="loginRole">Login as</label>
+        <select id="loginRole" class="form-select">
+          <option value="participant">Participant</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-block">Login</button>
+    </form>
+    
+    <form id="signupForm" class="auth-form">
+      <div class="form-group">
+        <label for="signupName">Full Name</label>
+        <input type="text" id="signupName" class="form-control" placeholder="John Doe" required>
+      </div>
+      <div class="form-group">
+        <label for="signupEmail">Email</label>
+        <input type="email" id="signupEmail" class="form-control" placeholder="your@email.com" required>
+      </div>
+      <div class="form-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" class="form-control" placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label for="signupRole">Sign up as</label>
+        <select id="signupRole" class="form-select">
+          <option value="participant">Participant</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-block">Create Account</button>
+    </form>
+    
+    <div class="auth-footer">
+      <p id="authFooterText">Don't have an account? <a href="#" onclick="switchAuthTab('signup')">Sign up</a></p>
+    </div>
+  </div>
+</div>
+
+<footer>
   <div class="footbar">
     <div class="status">
       <div class="dot"></div>
@@ -207,21 +409,223 @@ const store = {
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
 };
 
-// Default User state, including new auth fields
-const defaultUserState = {
-  isLoggedIn: false, // NEW: Authentication status
-  role: 'participant', // NEW: User role (participant/admin)
-  name:'Guest',
-  email: '', // NEW: User email
-  xp:0, level:1, plan:[], scans:[], zoneCounts:{}, reels:[]
-};
-
 const state = {
   view: 'home',
-  user: store.get('sb_user', defaultUserState),
-  // NEW: Mock user database for sign-up/login demo
-  users: store.get('sb_users', [{email: 'admin@fest.com', password: 'password', role: 'admin'}, {email: 'aadit@fest.com', password: 'password', role: 'participant'}]),
+  user: store.get('sb_user', {name:'Aadit', xp:0, level:1, plan:[], scans:[], zoneCounts:{}, reels:[]}),
 };
+
+/* ========= AUTHENTICATION ========= */
+const auth = {
+  user: null,
+  users: store.get('users', []),
+  
+  init() {
+    // Check if user is already logged in
+    const savedUser = store.get('currentUser');
+    if (savedUser) {
+      this.user = savedUser;
+      this.updateUI();
+    }
+    
+    // Add default admin if no users exist
+    if (this.users.length === 0) {
+      this.users.push({
+        id: 'admin-1',
+        name: 'Fest Admin',
+        email: 'admin@festifyxr.com',
+        password: 'admin123',
+        role: 'admin'
+      });
+      store.set('users', this.users);
+    }
+    
+    // Setup form handlers
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.login();
+    });
+    
+    document.getElementById('signupForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.signup();
+    });
+    
+    // Setup user menu
+    document.getElementById('userAvatar').addEventListener('click', () => {
+      document.getElementById('userDropdown').classList.toggle('active');
+    });
+    
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      this.logout();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.user-menu')) {
+        document.getElementById('userDropdown').classList.remove('active');
+      }
+    });
+  },
+  
+  login() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const role = document.getElementById('loginRole').value;
+    
+    const user = this.users.find(u => 
+      u.email === email && 
+      u.password === password && 
+      u.role === role
+    );
+    
+    if (user) {
+      this.user = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      };
+      
+      store.set('currentUser', this.user);
+      this.updateUI();
+      hideAuth();
+      toast(`Welcome back, ${user.name}!`);
+      
+      // Load user-specific data
+      state.user = store.get(`sb_user_${user.id}`, { 
+        name: user.name, 
+        xp:0, 
+        level:1, 
+        plan:[], 
+        scans:[], 
+        zoneCounts:{}, 
+        reels:[] 
+      });
+      
+      render();
+    } else {
+      toast('Invalid credentials or user not found');
+    }
+  },
+  
+  signup() {
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const role = document.getElementById('signupRole').value;
+    
+    // Check if user already exists
+    if (this.users.some(u => u.email === email)) {
+      toast('Email already registered');
+      return;
+    }
+    
+    const newUser = {
+      id: 'user-' + Date.now(),
+      name,
+      email,
+      password,
+      role
+    };
+    
+    this.users.push(newUser);
+    store.set('users', this.users);
+    
+    // Auto login after signup
+    this.user = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role
+    };
+    
+    store.set('currentUser', this.user);
+    this.updateUI();
+    hideAuth();
+    toast(`Account created! Welcome, ${name}!`);
+    
+    // Initialize user data
+    state.user = { 
+      name: name, 
+      xp:0, 
+      level:1, 
+      plan:[], 
+      scans:[], 
+      zoneCounts:{}, 
+      reels:[] 
+    };
+    store.set(`sb_user_${newUser.id}`, state.user);
+    
+    render();
+  },
+  
+  logout() {
+    this.user = null;
+    store.remove('currentUser');
+    this.updateUI();
+    showAuth();
+    toast('You have been logged out');
+  },
+  
+  updateUI() {
+    const loginBtn = document.getElementById('loginBtn');
+    const userMenu = document.getElementById('userMenu');
+    const adminBtn = document.getElementById('adminBtn');
+    const userAvatar = document.getElementById('userAvatar');
+    
+    if (this.user) {
+      loginBtn.style.display = 'none';
+      userMenu.style.display = 'block';
+      userAvatar.textContent = this.user.name.charAt(0).toUpperCase();
+      
+      if (this.user.role === 'admin') {
+        adminBtn.style.display = 'block';
+      } else {
+        adminBtn.style.display = 'none';
+      }
+    } else {
+      loginBtn.style.display = 'block';
+      userMenu.style.display = 'none';
+      adminBtn.style.display = 'none';
+    }
+  }
+};
+
+/* ========= AUTH UI FUNCTIONS ========= */
+function showAuth() {
+  document.getElementById('authContainer').style.display = 'block';
+  document.getElementById('app').style.display = 'none';
+  document.querySelector('footer').style.display = 'none';
+}
+
+function hideAuth() {
+  document.getElementById('authContainer').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.querySelector('footer').style.display = 'block';
+}
+
+function switchAuthTab(tab) {
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  const loginTab = document.querySelector('.auth-tab:nth-child(1)');
+  const signupTab = document.querySelector('.auth-tab:nth-child(2)');
+  const authFooterText = document.getElementById('authFooterText');
+  
+  if (tab === 'login') {
+    loginForm.classList.add('active');
+    signupForm.classList.remove('active');
+    loginTab.classList.add('active');
+    signupTab.classList.remove('active');
+    authFooterText.innerHTML = 'Don\'t have an account? <a href="#" onclick="switchAuthTab(\'signup\')">Sign up</a>';
+  } else {
+    loginForm.classList.remove('active');
+    signupForm.classList.add('active');
+    loginTab.classList.remove('active');
+    signupTab.classList.add('active');
+    authFooterText.innerHTML = 'Already have an account? <a href="#" onclick="switchAuthTab(\'login\')">Login</a>';
+  }
+}
 
 /* ========= UTIL ========= */
 const qs = s => document.querySelector(s);
@@ -231,13 +635,18 @@ function setXP(delta){
   state.user.xp = Math.max(0, (state.user.xp||0) + delta);
   const level = Math.floor(1 + state.user.xp / 100);
   state.user.level = level;
-  store.set('sb_user', state.user);
+  
+  if (auth.user) {
+    store.set(`sb_user_${auth.user.id}`, state.user);
+  }
+  
   qs('#xpFoot').textContent = state.user.xp;
 }
 function greet(){
   const h = new Date().getHours();
-  const part = h<12?'morning':h<17?'afternoon':'evening';
-  qs('#greet').textContent = `Good ${part}, ${state.user.name}! (Role: ${state.user.role})`;
+  const part = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+  const name = auth.user ? auth.user.name : state.user.name;
+  qs('#greet').textContent = `Good ${part}, ${name}!`;
 }
 function pickHeatClass(n){ return n>=40?'heat-4':n>=28?'heat-3':n>=16?'heat-2':n>=6?'heat-1':'heat-0'; }
 function ensureZoneCounts(){
@@ -246,88 +655,8 @@ function ensureZoneCounts(){
   store.set('sb_user', state.user);
 }
 
-/* ========= AUTHENTICATION (NEW) ========= */
-function signUpUser(form){
-  const name = form.name.value.trim();
-  const email = form.email.value.trim();
-  const password = form.password.value;
-  const role = form.role.value;
-  if (!name || !email || !password) { toast('Please fill all fields'); return; }
-  if (state.users.find(u => u.email === email)) { toast('Email already exists'); return; }
-
-  const newUser = { name, email, password, role };
-  state.users.push(newUser);
-  store.set('sb_users', state.users);
-
-  // Auto-login the new user
-  state.user = {...defaultUserState, isLoggedIn: true, role, name, email, xp: 0 };
-  store.set('sb_user', state.user);
-  toast(`Welcome, ${name}! Signed up as ${role}.`);
-  goto('home');
-}
-
-function logInUser(form){
-  const email = form.email.value.trim();
-  const password = form.password.value;
-  const user = state.users.find(u => u.email === email && u.password === password);
-
-  if (!user) { toast('Invalid email or password'); return; }
-
-  // Simulate loading user data (XP, plan, etc. - in a real app, this comes from the DB)
-  state.user = {...defaultUserState, isLoggedIn: true, role: user.role, name: user.name || user.email.split('@')[0], email: user.email, xp: 50 }; // Added a default XP for demo
-  store.set('sb_user', state.user);
-  toast(`Logged in as ${user.role}!`);
-  goto('home');
-}
-
-function logOut(){
-  state.user = {...defaultUserState, isLoggedIn: false, name: 'Guest'};
-  store.set('sb_user', state.user);
-  qs('#appHeader').style.display = 'none';
-  qs('#appFooter').style.display = 'none';
-  toast('Logged out successfully.');
-  goto('login');
-}
-
-/* ========= ROUTER & VIEWS (MODIFIED) ========= */
+/* ========= ROUTER ========= */
 const VIEWS = {
-  // NEW: Login View
-  login(){ return `
-    <div class="auth-container card">
-      <h3>Login to FestifyXR 🔑</h3>
-      <div class="body">
-        <form onsubmit="event.preventDefault(); logInUser(this)">
-          <input type="email" name="email" placeholder="Email (e.g., admin@fest.com)" required>
-          <input type="password" name="password" placeholder="Password" required>
-          <button type="submit" class="btn">Log In</button>
-        </form>
-        <div style="height:15px"></div>
-        <div class="muted">Need an account? <a class="inline" href="#" onclick="goto('signup')">Sign Up Here</a></div>
-        <div class="muted" style="margin-top:10px; font-size:.8rem">Demo credentials: admin@fest.com/password or aadit@fest.com/password</div>
-      </div>
-    </div>
-  `;},
-  // NEW: Sign Up View
-  signup(){ return `
-    <div class="auth-container card">
-      <h3>Sign Up for FestifyXR 📝</h3>
-      <div class="body">
-        <form onsubmit="event.preventDefault(); signUpUser(this)">
-          <input type="text" name="name" placeholder="Full Name" required>
-          <input type="email" name="email" placeholder="Email" required>
-          <input type="password" name="password" placeholder="Password" required>
-          <select name="role">
-            <option value="participant">Participant</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button type="submit" class="btn alt">Sign Up</button>
-        </form>
-        <div style="height:15px"></div>
-        <div class="muted">Already have an account? <a class="inline" href="#" onclick="goto('login')">Log In</a></div>
-      </div>
-    </div>
-  `;},
-  // Existing Views (omitted for brevity, assume they are still here)
   home(){ return `
     <div class="grid grid-3">
       <section class="card">
@@ -344,14 +673,6 @@ const VIEWS = {
             <button class="btn alt" onclick="openQR()">Scan QR</button>
             <button class="btn ghost" onclick="goto('map')">Live Crowd Map</button>
           </div>
-          ${state.user.role === 'admin' ? `
-            <div style="height:20px"></div>
-            <h4>Admin Actions 🛠️</h4>
-            <div class="row">
-              <button class="btn red" onclick="toast('Admin: Opened Event Creator Mock')">Create Event</button>
-              <button class="btn red" onclick="toast('Admin: Opened User Management Mock')">Manage Users</button>
-            </div>
-          ` : ''}
         </div>
       </section>
       <section class="card">
@@ -372,7 +693,6 @@ const VIEWS = {
       </section>
     </div>
   `;},
-  // ... other views (events, plan, map, rewards, buddy, reel) remain the same
   events(){
     const q = (qs('#search').value||'').toLowerCase();
     const filtered = SAT.events.filter(e => e.title.toLowerCase().includes(q) || e.tag.includes(q));
@@ -529,6 +849,106 @@ const VIEWS = {
       </section>
     `;
   },
+  admin(){
+    if (!auth.user || auth.user.role !== 'admin') {
+      return '<div class="card"><div class="body"><p>Access denied. Admin privileges required.</p></div></div>';
+    }
+    
+    const users = auth.users;
+    const participants = users.filter(u => u.role === 'participant');
+    const admins = users.filter(u => u.role === 'admin');
+    
+    return `
+      <div class="grid grid-2">
+        <section class="card">
+          <h3>User Management</h3>
+          <div class="body">
+            <div class="kpis">
+              <div class="kpi"><div class="muted">Total Users</div><b>${users.length}</b></div>
+              <div class="kpi"><div class="muted">Participants</div><b>${participants.length}</b></div>
+              <div class="kpi"><div class="muted">Admins</div><b>${admins.length}</b></div>
+            </div>
+            <div style="height:16px"></div>
+            <div class="toolbar">
+              <button class="btn" onclick="exportUserData()">Export Data</button>
+              <button class="btn alt" onclick="resetAllData()">Reset All Data</button>
+            </div>
+          </div>
+        </section>
+        
+        <section class="card">
+          <h3>Recent Activity</h3>
+          <div class="body list">
+            <div class="item">
+              <div class="meta">
+                <b>New user registration</b>
+                <span class="muted">Just now</span>
+              </div>
+              <span class="pill">Participant</span>
+            </div>
+            <div class="item">
+              <div class="meta">
+                <b>QR code scanned</b>
+                <span class="muted">5 mins ago</span>
+              </div>
+              <span class="pill">+15 XP</span>
+            </div>
+            <div class="item">
+              <div class="meta">
+                <b>Event check-in</b>
+                <span class="muted">12 mins ago</span>
+              </div>
+              <span class="pill">EDM Night</span>
+            </div>
+          </div>
+        </section>
+        
+        <section class="card">
+          <h3>Participants</h3>
+          <div class="body list">
+            ${participants.map(u => `
+              <div class="item">
+                <div class="meta">
+                  <b>${u.name}</b>
+                  <span class="muted">${u.email}</span>
+                </div>
+                <div class="row">
+                  <span class="pill">XP: ${store.get(`sb_user_${u.id}`, {xp:0}).xp}</span>
+                  <button class="btn ghost" onclick="viewUserDetails('${u.id}')">View</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+        
+        <section class="card">
+          <h3>System Stats</h3>
+          <div class="body">
+            <div class="list">
+              <div class="item">
+                <div class="meta">
+                  <b>Total Events</b>
+                </div>
+                <span class="pill">${SAT.events.length}</span>
+              </div>
+              <div class="item">
+                <div class="meta">
+                  <b>Total Scans</b>
+                </div>
+                <span class="pill">${users.reduce((sum, u) => sum + (store.get(`sb_user_${u.id}`, {scans:[]}).scans.length), 0)}</span>
+              </div>
+              <div class="item">
+                <div class="meta">
+                  <b>Active Zones</b>
+                </div>
+                <span class="pill">${SAT.zones.length}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+  }
 };
 
 function goto(view){
@@ -537,29 +957,12 @@ function goto(view){
   render();
 }
 function render(){
-  // NEW: Control header/footer visibility based on login state
-  if (state.user.isLoggedIn) {
-      qs('#appHeader').style.display = 'block';
-      qs('#appFooter').style.display = 'block';
-      // Ensure admin user only sees 'home' for now if they try to navigate to a non-existent admin view
-      if (state.user.role === 'admin') {
-        // You would typically restrict views here, but for this demo we let them see all
-      }
-      qs('#app').innerHTML = VIEWS[state.view]();
-      qs('#xpFoot').textContent = state.user.xp;
-      greet();
-  } else {
-      qs('#appHeader').style.display = 'none';
-      qs('#appFooter').style.display = 'none';
-      // Only render login or signup if not logged in
-      if (state.view !== 'login' && state.view !== 'signup') {
-          state.view = 'login';
-      }
-      qs('#app').innerHTML = VIEWS[state.view]();
-  }
+  qs('#app').innerHTML = VIEWS[state.view]();
+  qs('#xpFoot').textContent = state.user.xp;
+  greet();
 }
 
-/* ========= FEATURES (UNMODIFIED) ========= */
+/* ========= FEATURES ========= */
 function eventLine(e, compact=false){
   return `
     <div class="item">
@@ -577,7 +980,6 @@ function eventLine(e, compact=false){
   `;
 }
 function recommend(){
-  // naive: suggest highest points not in plan
   return SAT.events
     .filter(e=>!state.user.plan.includes(e.id))
     .sort((a,b)=>b.points-a.points)
@@ -608,13 +1010,11 @@ function checkInEvent(id){
   render();
 }
 
-/* ========= QR SCAN (UNMODIFIED) ========= */
-// We provide camera preview + manual code fallback. Decoding actual QR without libs is heavy, so demo accepts manual entry
+/* ========= QR SCAN ========= */
 let camStream=null;
 function openQR(){
   const code = prompt("Demo QR: try SAT-EDM-15, SAT-ROBO-20, SAT-FOOD-5, SAT-BONUS-25\n\n(Optional) Enter code manually:");
   if(code){ processQR(code.trim()); return; }
-  // If user cancels, try camera prompt (preview only)
   if(navigator.mediaDevices?.getUserMedia){
     navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
       camStream=stream;
@@ -633,7 +1033,6 @@ function promptCode(){
 function processQR(code){
   const entry = SAT.qrCatalog[code];
   if(!entry){ toast('Invalid QR'); return; }
-  // Double-scan protection
   if((state.user.scans||[]).find(s=>s.code===code)){ toast('Already scanned'); return; }
   setXP(entry.points);
   logScan({code, points:entry.points});
@@ -641,7 +1040,7 @@ function processQR(code){
     if(!state.user.plan.includes(entry.ref)) state.user.plan.push(entry.ref);
   }else if(entry.type==='spot'){
     ensureZoneCounts();
-    state.user.zoneCounts['z2'] += 8; // bump Food Court
+    state.user.zoneCounts['z2'] += 8;
     store.set('sb_user', state.user);
   }
   toast(`+${entry.points} XP 🎉`);
@@ -654,10 +1053,9 @@ function logScan(s){
   store.set('sb_user', state.user);
 }
 
-/* ========= MAP HEAT (UNMODIFIED) ========= */
+/* ========= MAP HEAT ========= */
 function pingHere(){
   ensureZoneCounts();
-  // pick nearest zone at random (demo)
   const z = SAT.zones[Math.floor(Math.random()*SAT.zones.length)];
   state.user.zoneCounts[z.id] += 3 + Math.floor(Math.random()*4);
   store.set('sb_user', state.user);
@@ -671,7 +1069,7 @@ function decrowd(){
   if(state.view==='map') render();
 }
 
-/* ========= BUDDY CHAT (UNMODIFIED) ========= */
+/* ========= BUDDY CHAT ========= */
 const chatEl = ()=>qs('#chat');
 function addBubble(txt, who='bot'){
   const d = document.createElement('div');
@@ -682,12 +1080,10 @@ function addBubble(txt, who='bot'){
 }
 function botReply(q){
   q = q.toLowerCase();
-  // intents
   if(/xp|points|score/.test(q)) return `You have ${state.user.xp} XP and are Level ${state.user.level}. Keep going!`;
   if(/navigate|route|where/.test(q)){
     const ev = SAT.events.find(e => q.includes(e.title.toLowerCase())) || null;
     if(ev) return `Opening navigation to ${ev.venue} for ${ev.title}.`;
-    // maybe venue name
     const z = SAT.zones.find(z => q.includes(z.name.toLowerCase()));
     if(z) return `Opening navigation to ${z.name}.`;
     return `Tell me the event or venue, e.g., “navigate to Main Stage”.`;
@@ -709,14 +1105,12 @@ function sendMsg(){
   const v = i.value.trim(); if(!v) return;
   addBubble(v,'me'); i.value='';
   const r = botReply(v);
-  // side effects
   if(r.startsWith('Opening navigation')) {
     const venue = (v.match(/to (.*)$/i)||[])[1] || '';
     if(venue) navToVenue(venue);
   }
   setTimeout(()=>addBubble(r,'bot'), 250);
 }
-/* Voice */
 let recog=null, listening=false;
 function toggleVoice(){
   if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
@@ -730,11 +1124,10 @@ function toggleVoice(){
   else { recog.stop(); listening=false; updateVoiceBtn(); }
 }
 function updateVoiceBtn(){ const b=qs('#voiceBtn'); if(!b) return; b.textContent = listening?'⏹️ Stop':'🎙️ Voice'; }
-/* Quick demos */
 function demoAR(){ alert('WebAR mock: overlaying info on poster.\n(For real AR, use WebXR / 8th Wall in a production build.)'); }
 function lostFound(){ alert('Lost & Found mock: In production, compare uploaded item image features for matches.'); }
 
-/* ========= REEL MAKER (UNMODIFIED) ========= */
+/* ========= REEL MAKER ========= */
 let reelImgs=[];
 async function loadFiles(files){
   reelImgs = await Promise.all([...files].map(file => new Promise((res)=>{
@@ -751,12 +1144,10 @@ function previewReel(){
   (function draw(){
     const i1 = reelImgs[Math.floor(t/120)%reelImgs.length];
     const i2 = reelImgs[(Math.floor(t/120)+1)%reelImgs.length];
-    const p = (t%120)/120; // 2s per image @60fps
+    const p = (t%120)/120;
     ctx.fillStyle='#0f1524'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    // Ken Burns zoom
     drawImageCover(ctx,i1, canvas.width, canvas.height, 1+0.05*p);
     ctx.globalAlpha = p; drawImageCover(ctx,i2, canvas.width, canvas.height, 1+0.05*(1-p)); ctx.globalAlpha=1;
-    // watermark
     ctx.fillStyle='#ffffffaa'; ctx.font='bold 20px system-ui'; ctx.fillText('FestifyXR 2025', 18, canvas.height-18);
     t++; canvas._raf = requestAnimationFrame(draw);
   })();
@@ -772,7 +1163,7 @@ function drawImageCover(ctx,img,w,h,zoom=1){
 async function recordReel(){
   const canvas = qs('#reelCanvas'); const ctx = canvas.getContext('2d');
   if(!reelImgs.length){ toast('Pick images first'); return; }
-  let frames = 0, maxFrames = reelImgs.length*120; // ~2s each @60fps
+  let frames = 0, maxFrames = reelImgs.length*120;
   const stream = canvas.captureStream(30);
   const rec = new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp9'});
   const chunks=[];
@@ -797,7 +1188,7 @@ async function recordReel(){
   })();
 }
 
-/* ========= GLOBALS (MODIFIED) ========= */
+/* ========= GLOBALS ========= */
 function redeem(id){
   const r = SAT.rewards.find(x=>x.id===id);
   if(!r) return;
@@ -807,29 +1198,93 @@ function redeem(id){
   render();
 }
 function resetDemo(){
-  localStorage.removeItem('sb_user');
-  localStorage.removeItem('sb_users');
-  state.user = store.get('sb_user', defaultUserState);
-  state.users = store.get('sb_users', [{email: 'admin@fest.com', password: 'password', role: 'admin'}, {email: 'aadit@fest.com', password: 'password', role: 'participant'}]);
-  toast('Demo reset. Log in again.');
-  goto('login');
+  if (auth.user) {
+    state.user = { 
+      name: auth.user.name, 
+      xp:0, 
+      level:1, 
+      plan:[], 
+      scans:[], 
+      zoneCounts:{}, 
+      reels:[] 
+    };
+    store.set(`sb_user_${auth.user.id}`, state.user);
+    toast('Your data has been reset');
+    render();
+  } else {
+    localStorage.removeItem('sb_user');
+    state.user = {name:'Aadit', xp:0, level:1, plan:[], scans:[], zoneCounts:{}, reels:[]};
+    toast('Demo reset');
+    render();
+  }
 }
+function exportUserData() {
+  const data = {
+    users: auth.users,
+    userData: {}
+  };
+  
+  auth.users.forEach(u => {
+    data.userData[u.id] = store.get(`sb_user_${u.id}`, {});
+  });
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'festifyxr-data.json';
+  a.click();
+  
+  toast('Data exported successfully');
+}
+
+function resetAllData() {
+  if (confirm('Are you sure you want to reset all user data? This cannot be undone.')) {
+    auth.users.forEach(u => {
+      store.remove(`sb_user_${u.id}`);
+    });
+    
+    auth.users = [{
+      id: 'admin-1',
+      name: 'Fest Admin',
+      email: 'admin@festifyxr.com',
+      password: 'admin123',
+      role: 'admin'
+    }];
+    
+    store.set('users', auth.users);
+    toast('All user data has been reset');
+    render();
+  }
+}
+
+function viewUserDetails(userId) {
+  const user = auth.users.find(u => u.id === userId);
+  const userData = store.get(`sb_user_${userId}`, {});
+  
+  alert(`User: ${user.name}\nEmail: ${user.email}\nXP: ${userData.xp || 0}\nLevel: ${userData.level || 1}\nEvents Planned: ${userData.plan ? userData.plan.length : 0}`);
+}
+
 document.getElementById('search').addEventListener('input', ()=>{ if(state.view==='events') render(); });
 document.querySelectorAll('#nav button').forEach(b=> b.addEventListener('click', ()=>goto(b.dataset.view)));
 
 function init(){
-  // NEW: Check login status on load
-  if(state.user.isLoggedIn){
+  auth.init();
+  
+  if (!auth.user) {
+    showAuth();
+  } else {
     greet();
     render();
-    // welcome chat seed only if logged in and on home
-    setTimeout(()=>{
-      if(state.view==='home'){ goto('buddy'); setTimeout(()=>{
-        addBubble(`Hey ${state.user.name}! I’m FestifyXR 👋 Ask me about events, points, or routes.`);
-      }, 300)}
+    
+    setTimeout(() => {
+      if (state.view === 'home') {
+        goto('buddy');
+        setTimeout(() => {
+          addBubble(`Hey ${auth.user.name}! I’m FestifyXR 👋 Ask me about events, points, or routes.`);
+        }, 300);
+      }
     }, 600);
-  } else {
-    goto('login');
   }
 }
 init();
