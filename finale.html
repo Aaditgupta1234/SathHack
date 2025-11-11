@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -441,20 +440,6 @@
     justify-content: center;
     font-size: 20px;
   }
-
-/* === Imported Buddy styles === */
-  .chat-container {
-  .chat-header {
-  .chat-status {
-  .suggestions {
-  .suggestion {
-  .suggestion:hover {
-  .typing-indicator {
-  .typing-indicator.active {
-  .typing-dots {
-  .typing-dots:nth-child(2) {
-  .typing-dots:nth-child(3) {
-  @keyframes typing {
 </style>
 </head>
 <body>
@@ -895,272 +880,223 @@ const auth = {
   }
 };
 
-/* ========= DYNAMIC CHATBOT ========= */
-const chatbot = {
-  conversationHistory: [],
-  userName: '',
+/* ========= CHATBOT ========= */
+let chatInitialized = false;
+
+function initChat() {
+  if (chatInitialized) return;
+  chatInitialized = true;
   
-  init() {
-    this.userName = auth.user ? auth.user.name : 'there';
-    this.setupChat();
-    this.addWelcomeMessage();
-  },
+  const chatContainer = document.getElementById('chat');
+  if (!chatContainer) return;
   
-  setupChat() {
-    const chatInput = document.getElementById('chatInput');
-    const voiceBtn = document.getElementById('voiceBtn');
-    
-    if (chatInput) {
-      // Clear previous event listeners if any
-      chatInput.removeEventListener('keydown', this.handleChatInput);
-      // Add new event listener
-      chatInput.addEventListener('keydown', this.handleChatInput);
-    }
-    
-    if (voiceBtn) {
-      // Clear previous event listeners if any
-      voiceBtn.removeEventListener('click', toggleVoice);
-      // Add new event listener
-      voiceBtn.addEventListener('click', toggleVoice);
-    }
-    
-    // Setup suggestions
-    this.setupSuggestions();
-  },
+  // Clear previous content
+  chatContainer.innerHTML = '';
   
-  setupSuggestions() {
-    const suggestions = document.querySelectorAll('.suggestion');
-    suggestions.forEach(suggestion => {
-      suggestion.addEventListener('click', () => {
-        const text = suggestion.textContent;
-        const chatInput = document.getElementById('chatInput');
-        if (chatInput) {
-          chatInput.value = text;
-          this.sendMessage();
-        }
-      });
-    });
-  },
+  const userName = auth.user ? auth.user.name : 'there';
   
-  addWelcomeMessage() {
-    const welcomeMessages = [
-      `Hey ${this.userName}! I'm FestifyXR 👋`,
-      `Hello ${this.userName}! How can I help you today?`,
-      `Hi there! I'm your festival assistant. What can I do for you?`
+  // Add welcome message
+  addChatBubble(`Hey ${userName}! I'm FestifyXR 👋`);
+  
+  setTimeout(() => {
+    addChatBubble("Try asking me about events, your points, or navigation. Here are some examples:");
+    showSuggestions();
+  }, 1000);
+}
+
+function addChatBubble(text, who = 'bot') {
+  const chatContainer = document.getElementById('chat');
+  if (!chatContainer) return;
+  
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${who === 'me' ? 'me' : 'bot'}`;
+  bubble.textContent = text;
+  
+  chatContainer.appendChild(bubble);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function showSuggestions() {
+  const chatContainer = document.getElementById('chat');
+  if (!chatContainer) return;
+  
+  const suggestionsDiv = document.createElement('div');
+  suggestionsDiv.className = 'suggestions';
+  suggestionsDiv.innerHTML = `
+    <div class="suggestion" onclick="useSuggestion(this)">What's my XP?</div>
+    <div class="suggestion" onclick="useSuggestion(this)">Navigate to Main Stage</div>
+    <div class="suggestion" onclick="useSuggestion(this)">What events are happening?</div>
+    <div class="suggestion" onclick="useSuggestion(this)">What's my plan?</div>
+  `;
+  
+  chatContainer.appendChild(suggestionsDiv);
+}
+
+function useSuggestion(element) {
+  const text = element.textContent;
+  const chatInput = document.getElementById('chatInput');
+  if (chatInput) {
+    chatInput.value = text;
+    sendChatMessage();
+  }
+}
+
+function sendChatMessage() {
+  const chatInput = document.getElementById('chatInput');
+  if (!chatInput) return;
+  
+  const message = chatInput.value.trim();
+  if (!message) return;
+  
+  addChatBubble(message, 'me');
+  chatInput.value = '';
+  
+  // Show typing indicator
+  showTypingIndicator();
+  
+  // Process and respond to the message
+  setTimeout(() => {
+    hideTypingIndicator();
+    const response = generateChatResponse(message);
+    addChatBubble(response, 'bot');
+  }, 800 + Math.random() * 800);
+}
+
+function showTypingIndicator() {
+  const chatContainer = document.getElementById('chat');
+  if (!chatContainer) return;
+  
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'typing-indicator active';
+  typingDiv.id = 'typingIndicator';
+  typingDiv.innerHTML = `
+    <span>FestifyXR is typing</span>
+    <span class="typing-dots"></span>
+    <span class="typing-dots"></span>
+    <span class="typing-dots"></span>
+  `;
+  
+  chatContainer.appendChild(typingDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function hideTypingIndicator() {
+  const typingIndicator = document.getElementById('typingIndicator');
+  if (typingIndicator) {
+    typingIndicator.remove();
+  }
+}
+
+function generateChatResponse(question) {
+  const q = question.toLowerCase();
+  
+  // Check for XP/points related questions
+  if (/xp|points|score|how many points/.test(q)) {
+    const responses = [
+      `You have ${state.user.xp} XP and are Level ${state.user.level}. Keep going!`,
+      `Current XP: ${state.user.xp} | Level: ${state.user.level}`,
+      `You've earned ${state.user.xp} XP so far. Great job!`
     ];
-    
-    const randomWelcome = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-    this.addBubble(randomWelcome);
-    
-    // Add some suggestions
-    setTimeout(() => {
-      this.addBubble("Try asking me about events, your points, or navigation. Here are some examples:");
-      this.showSuggestions();
-    }, 1000);
-  },
+    return responses[Math.floor(Math.random() * responses.length)];
+  }
   
-  showSuggestions() {
-    const chatContainer = document.getElementById('chat');
-    if (!chatContainer) return;
+  // Check for navigation related questions
+  if (/navigate|route|where|direction|how to get to/.test(q)) {
+    const event = SAT.events.find(e => q.includes(e.title.toLowerCase())) || null;
+    if (event) {
+      setTimeout(() => navToVenue(event.venue), 1000);
+      return `Opening navigation to ${event.venue} for ${event.title}.`;
+    }
     
-    const suggestionsDiv = document.createElement('div');
-    suggestionsDiv.className = 'suggestions';
-    suggestionsDiv.innerHTML = `
-      <div class="suggestion">What's my XP?</div>
-      <div class="suggestion">Navigate to Main Stage</div>
-      <div class="suggestion">What events are happening?</div>
-      <div class="suggestion">What's my plan?</div>
-    `;
+    const zone = SAT.zones.find(z => q.includes(z.name.toLowerCase()));
+    if (zone) {
+      setTimeout(() => navToVenue(zone.name), 1000);
+      return `Opening navigation to ${zone.name}.`;
+    }
     
-    chatContainer.appendChild(suggestionsDiv);
-    this.setupSuggestions();
-  },
+    const responses = [
+      `Tell me the event or venue, e.g., "navigate to Main Stage".`,
+      `Which venue would you like to navigate to?`,
+      `I can help you navigate to any event or venue. Just tell me the name.`
+    ];
+    return responses[Math.floor(Math.random() * responses.length)];
+  }
   
-  handleChatInput(event) {
-    if (event.key === 'Enter') {
-      chatbot.sendMessage();
+  // Check for events related questions
+  if (/events|show|list|what's happening|what events/.test(q)) {
+    const tag = ['music', 'tech', 'fun', 'food', 'show'].find(t => q.includes(t));
+    const pool = tag ? SAT.events.filter(e => e.tag === tag) : SAT.events;
+    
+    if (pool.length > 0) {
+      const eventList = pool.slice(0, 3).map(e => `${e.title} (${e.time})`).join(', ');
+      return `Here are some events: ${eventList}`;
+    } else {
+      return `I couldn't find any events matching your query.`;
     }
-  },
+  }
   
-  sendMessage() {
-    const chatInput = document.getElementById('chatInput');
-    if (!chatInput) return;
-    
-    const message = chatInput.value.trim();
-    if (!message) return;
-    
-    this.addBubble(message, 'me');
-    this.addToHistory('user', message);
-    chatInput.value = '';
-    
-    // Show typing indicator
-    this.showTypingIndicator();
-    
-    // Process and respond to the message
-    setTimeout(() => {
-      this.hideTypingIndicator();
-      const response = this.generateResponse(message);
-      this.addBubble(response, 'bot');
-      this.addToHistory('bot', response);
-    }, 800 + Math.random() * 800); // Random delay to simulate thinking
-  },
+  // Check for schedule/plan related questions
+  if (/schedule|plan|my plan|what am i doing|what's my schedule/.test(q)) {
+    const plannedEvents = SAT.events.filter(e => state.user.plan.includes(e.id));
+    if (plannedEvents.length > 0) {
+      const planList = plannedEvents.map(e => `${e.title} at ${e.time}`).join(', ');
+      return `You planned: ${planList}`;
+    } else {
+      return `Your plan is empty. Add some events from the Events tab!`;
+    }
+  }
   
-  showTypingIndicator() {
-    const chatContainer = document.getElementById('chat');
-    if (!chatContainer) return;
-    
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'typing-indicator active';
-    typingDiv.id = 'typingIndicator';
-    typingDiv.innerHTML = `
-      <span>FestifyXR is typing</span>
-      <span class="typing-dots"></span>
-      <span class="typing-dots"></span>
-      <span class="typing-dots"></span>
-    `;
-    
-    chatContainer.appendChild(typingDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  },
+  // Check for rewards related questions
+  if (/rewards|what can i get|redeem|what rewards/.test(q)) {
+    const affordableRewards = SAT.rewards.filter(r => state.user.xp >= r.cost);
+    if (affordableRewards.length > 0) {
+      const rewardList = affordableRewards.map(r => `${r.title} (${r.cost} XP)`).join(', ');
+      return `You can redeem: ${rewardList}`;
+    } else {
+      return `You need more XP to redeem rewards. Keep scanning QR codes!`;
+    }
+  }
   
-  hideTypingIndicator() {
-    const typingIndicator = document.getElementById('typingIndicator');
-    if (typingIndicator) {
-      typingIndicator.remove();
-    }
-  },
+  // Check for greetings
+  if (/help|hi|hello|hey|how are you|good morning|good afternoon|good evening/.test(q)) {
+    const userName = auth.user ? auth.user.name : 'there';
+    const greetings = [
+      `Hey ${userName}! I'm FestifyXR 👋 Try "events for music", "my points", or "navigate to Main Stage".`,
+      `Hello! I'm here to help with your festival experience.`,
+      `Hi there! Ask me about events, points, navigation, or your schedule.`
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
   
-  addBubble(text, who = 'bot') {
-    const chatContainer = document.getElementById('chat');
-    if (!chatContainer) return;
-    
-    const bubble = document.createElement('div');
-    bubble.className = `bubble ${who === 'me' ? 'me' : 'bot'}`;
-    bubble.textContent = text;
-    
-    chatContainer.appendChild(bubble);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  },
+  // Check for thanks
+  if (/thank|thanks|thank you|appreciate it/.test(q)) {
+    const responses = [
+      `You're welcome! Let me know if you need anything else.`,
+      `Happy to help! Enjoy the festival!`,
+      `No problem! Have a great time at the festival!`
+    ];
+    return responses[Math.floor(Math.random() * responses.length)];
+  }
   
-  addToHistory(role, message) {
-    this.conversationHistory.push({ role, message, timestamp: new Date() });
-    
-    // Keep only the last 10 messages in history
-    if (this.conversationHistory.length > 10) {
-      this.conversationHistory = this.conversationHistory.slice(-10);
-    }
-  },
-  
-  generateResponse(question) {
-    const q = question.toLowerCase();
-    
-    // Check for XP/points related questions
-    if (/xp|points|score|how many points/.test(q)) {
-      const responses = [
-        `You have ${state.user.xp} XP and are Level ${state.user.level}. Keep going!`,
-        `Current XP: ${state.user.xp} | Level: ${state.user.level}`,
-        `You've earned ${state.user.xp} XP so far. Great job!`
-      ];
-      return responses[Math.floor(Math.random() * responses.length)];
-    }
-    
-    // Check for navigation related questions
-    if (/navigate|route|where|direction|how to get to/.test(q)) {
-      const event = SAT.events.find(e => q.includes(e.title.toLowerCase())) || null;
-      if (event) {
-        setTimeout(() => navToVenue(event.venue), 1000);
-        return `Opening navigation to ${event.venue} for ${event.title}.`;
-      }
-      
-      const zone = SAT.zones.find(z => q.includes(z.name.toLowerCase()));
-      if (zone) {
-        setTimeout(() => navToVenue(zone.name), 1000);
-        return `Opening navigation to ${zone.name}.`;
-      }
-      
-      const responses = [
-        `Tell me the event or venue, e.g., "navigate to Main Stage".`,
-        `Which venue would you like to navigate to?`,
-        `I can help you navigate to any event or venue. Just tell me the name.`
-      ];
-      return responses[Math.floor(Math.random() * responses.length)];
-    }
-    
-    // Check for events related questions
-    if (/events|show|list|what's happening|what events/.test(q)) {
-      const tag = ['music', 'tech', 'fun', 'food', 'show'].find(t => q.includes(t));
-      const pool = tag ? SAT.events.filter(e => e.tag === tag) : SAT.events;
-      
-      if (pool.length > 0) {
-        const eventList = pool.slice(0, 3).map(e => `${e.title} (${e.time})`).join(', ');
-        return `Here are some events: ${eventList}`;
-      } else {
-        return `I couldn't find any events matching your query.`;
-      }
-    }
-    
-    // Check for schedule/plan related questions
-    if (/schedule|plan|my plan|what am i doing|what's my schedule/.test(q)) {
-      const plannedEvents = SAT.events.filter(e => state.user.plan.includes(e.id));
-      if (plannedEvents.length > 0) {
-        const planList = plannedEvents.map(e => `${e.title} at ${e.time}`).join(', ');
-        return `You planned: ${planList}`;
-      } else {
-        return `Your plan is empty. Add some events from the Events tab!`;
-      }
-    }
-    
-    // Check for rewards related questions
-    if (/rewards|what can i get|redeem|what rewards/.test(q)) {
-      const affordableRewards = SAT.rewards.filter(r => state.user.xp >= r.cost);
-      if (affordableRewards.length > 0) {
-        const rewardList = affordableRewards.map(r => `${r.title} (${r.cost} XP)`).join(', ');
-        return `You can redeem: ${rewardList}`;
-      } else {
-        return `You need more XP to redeem rewards. Keep scanning QR codes!`;
-      }
-    }
-    
-    // Check for greetings
-    if (/help|hi|hello|hey|how are you|good morning|good afternoon|good evening/.test(q)) {
-      const greetings = [
-        `Hey ${this.userName}! I'm FestifyXR 👋 Try "events for music", "my points", or "navigate to Main Stage".`,
-        `Hello! I'm here to help with your festival experience.`,
-        `Hi there! Ask me about events, points, navigation, or your schedule.`
-      ];
-      return greetings[Math.floor(Math.random() * greetings.length)];
-    }
-    
-    // Check for thanks
-    if (/thank|thanks|thank you|appreciate it/.test(q)) {
-      const responses = [
-        `You're welcome! Let me know if you need anything else.`,
-        `Happy to help! Enjoy the festival!`,
-        `No problem! Have a great time at the festival!`
-      ];
-      return responses[Math.floor(Math.random() * responses.length)];
-    }
-    
-    // Check for help
-    if (/what can you do|help me|how do you work|capabilities/.test(q)) {
-      return `I can help you with:
+  // Check for help
+  if (/what can you do|help me|how do you work|capabilities/.test(q)) {
+    return `I can help you with:
 - Checking your XP and level
 - Navigating to events and venues
 - Finding events by category
 - Viewing your planned schedule
 - Checking available rewards
 - And much more! Just ask me anything about the festival.`;
-    }
-    
-    // Default response
-    const defaultResponses = [
-      `I'm not sure how to respond to that. Try asking about events, points, or navigation.`,
-      `I'm still learning! Try "my points", "events for music", or "navigate to Main Stage".`,
-      `Hmm, I didn't understand that. Can you try asking differently?`
-    ];
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   }
-};
+  
+  // Default response
+  const defaultResponses = [
+    `I'm not sure how to respond to that. Try asking about events, points, or navigation.`,
+    `I'm still learning! Try "my points", "events for music", or "navigate to Main Stage".`,
+    `Hmm, I didn't understand that. Can you try asking differently?`
+  ];
+  return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+}
 
 /* ========= AUTH UI FUNCTIONS ========= */
 function showAuth() {
@@ -1403,15 +1339,15 @@ const VIEWS = {
           <div class="body">
             <div class="chat" id="chat"></div>
             <div class="inputbar">
-              <input id="chatInput" placeholder="Ask me anything: 'Where is Robo Wars?' 'What’s my XP?'" onkeydown="if(event.key==='Enter') chatbot.sendMessage()">
-              <button class="btn" onclick="chatbot.sendMessage()">Send</button>
+              <input id="chatInput" placeholder="Ask me anything: 'Where is Robo Wars?' 'What's my XP?'" onkeydown="if(event.key==='Enter') sendChatMessage()">
+              <button class="btn" onclick="sendChatMessage()">Send</button>
               <button class="btn alt" id="voiceBtn" onclick="toggleVoice()">🎙️ Voice</button>
             </div>
             <div style="height:8px"></div>
             <div class="row muted">
-              <span class="tag">try: “events for music”</span>
-              <span class="tag">“navigate to Main Stage”</span>
-              <span class="tag">“my points?”</span>
+              <span class="tag">try: "events for music"</span>
+              <span class="tag">"navigate to Main Stage"</span>
+              <span class="tag">"my points?"</span>
             </div>
           </div>
         </section>
@@ -1557,7 +1493,7 @@ function goto(view){
   
   if (view === 'buddy') {
     setTimeout(() => {
-      chatbot.init();
+      initChat();
     }, 300);
   }
 }
@@ -1565,7 +1501,6 @@ function render(){
   qs('#app').innerHTML = VIEWS[state.view]();
   qs('#xpFoot').textContent = state.user.xp;
   greet();
-  if (state.view === 'buddy') { setTimeout(()=>chatbot.init(), 50); }
 }
 
 /* ========= FEATURES ========= */
@@ -1742,61 +1677,47 @@ function navigateToZone() {
   closeMapModal();
 }
 
-/* ========= BUDDY CHAT ========= */
-const chatEl = ()=>qs('#chat');
-function addBubble(txt, who='bot'){
-  const d = document.createElement('div');
-  d.className = 'bubble ' + (who==='me'?'me':'bot');
-  d.textContent = txt;
-  chatEl().appendChild(d);
-  chatEl().scrollTop = chatEl().scrollHeight;
-}
-function botReply(q){
-  q = q.toLowerCase();
-  if(/xp|points|score/.test(q)) return `You have ${state.user.xp} XP and are Level ${state.user.level}. Keep going!`;
-  if(/navigate|route|where/.test(q)){
-    const ev = SAT.events.find(e => q.includes(e.title.toLowerCase())) || null;
-    if(ev) return `Opening navigation to ${ev.venue} for ${ev.title}.`;
-    const z = SAT.zones.find(z => q.includes(z.name.toLowerCase()));
-    if(z) return `Opening navigation to ${z.name}.`;
-    return `Tell me the event or venue, e.g., "navigate to Main Stage".`;
-  }
-  if(/events|show|list/.test(q)){
-    const tag = ['music','tech','fun','food','show'].find(t=>q.includes(t));
-    const pool = tag? SAT.events.filter(e=>e.tag===tag) : SAT.events;
-    return `Here are some picks: ` + pool.slice(0,3).map(e=>e.title).join(', ');
-  }
-  if(/schedule|plan/.test(q)){
-    const mine = SAT.events.filter(e=>state.user.plan.includes(e.id));
-    return mine.length? `You planned: ${mine.map(e=>e.title).join(', ')}` : `Your plan is empty. Add some events!`;
-  }
-  if(/help|hi|hello|hey/.test(q)) return `Hey! I'm FestifyXR 👋 Try "events for music", "my points", or "navigate to Main Stage".`;
-  return `Got it! I'm still learning. Try asking "my points" or "events for tech".`;
-}
-function sendMsg(){
-  const i = qs('#chatInput'); if(!i) return;
-  const v = i.value.trim(); if(!v) return;
-  addBubble(v,'me'); i.value='';
-  const r = botReply(v);
-  if(r.startsWith('Opening navigation')) {
-    const venue = (v.match(/to (.*)$/i)||[])[1] || '';
-    if(venue) navToVenue(venue);
-  }
-  setTimeout(()=>addBubble(r,'bot'), 250);
-}
+/* ========= VOICE ========= */
 let recog=null, listening=false;
 function toggleVoice(){
   if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
     toast('Speech API not supported'); return;
   }
   const Cls = window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!recog){ recog = new Cls(); recog.lang='en-IN'; recog.interimResults=false; recog.onresult = e => {
-      const text = e.results[0][0].transcript; qs('#chatInput').value=text; chatbot.sendMessage();
-    }; recog.onend = ()=>{ listening=false; updateVoiceBtn(); }; }
-  if(!listening){ recog.start(); listening=true; updateVoiceBtn(); toast('Listening…'); }
-  else { recog.stop(); listening=false; updateVoiceBtn(); }
+  if(!recog){ 
+    recog = new Cls(); 
+    recog.lang='en-IN'; 
+    recog.interimResults=false; 
+    recog.onresult = e => {
+      const text = e.results[0][0].transcript; 
+      const chatInput = document.getElementById('chatInput');
+      if (chatInput) {
+        chatInput.value = text; 
+        sendChatMessage();
+      }
+    }; 
+    recog.onend = ()=>{ 
+      listening=false; 
+      updateVoiceBtn(); 
+    }; 
+  }
+  if(!listening){ 
+    recog.start(); 
+    listening=true; 
+    updateVoiceBtn(); 
+    toast('Listening…'); 
+  }
+  else { 
+    recog.stop(); 
+    listening=false; 
+    updateVoiceBtn(); 
+  }
 }
-function updateVoiceBtn(){ const b=qs('#voiceBtn'); if(!b) return; b.textContent = listening?'⏹️ Stop':'🎙️ Voice'; }
+function updateVoiceBtn(){ 
+  const b=qs('#voiceBtn'); 
+  if(!b) return; 
+  b.textContent = listening?'⏹️ Stop':'🎙️ Voice'; 
+}
 function demoAR(){ alert('WebAR mock: overlaying info on poster.\n(For real AR, use WebXR / 8th Wall in a production build.)'); }
 function lostFound(){ alert('Lost & Found mock: In production, compare uploaded item image features for matches.'); }
 
@@ -1949,12 +1870,6 @@ function init(){
   } else {
     greet();
     render();
-    
-    setTimeout(() => {
-      if (state.view === 'home') {
-        goto('buddy');
-      }
-    }, 600);
   }
 }
 init();
